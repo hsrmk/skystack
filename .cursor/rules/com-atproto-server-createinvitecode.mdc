@@ -1,0 +1,32 @@
+---
+description: Create Invite Code documentation for a PDS
+globs: 
+alwaysApply: false
+---
+In the atproto python SDK, the create_invite_code.py (com.atproto.server.createInviteCode) is defined as:
+
+```
+import typing as t
+
+import typing_extensions as te
+
+from atproto_client.models import base, string_formats
+
+
+class Data(base.DataModelBase):
+    """Input data model for :obj:`com.atproto.server.createInviteCode`."""
+
+    use_count: int  #: Use count.
+    for_account: t.Optional[string_formats.Did] = None  #: For account.
+
+
+class DataDict(t.TypedDict):
+    use_count: int  #: Use count.
+    for_account: te.NotRequired[t.Optional[string_formats.Did]]  #: For account.
+
+
+class Response(base.ResponseModelBase):
+    """Output data model for :obj:`com.atproto.server.createInviteCode`."""
+
+    code: str  #: Code.
+```

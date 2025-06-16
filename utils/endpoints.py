@@ -1,0 +1,4 @@
+NEWSLETTER_USERS_RANKED = '/api/v1/publication/users/ranked?public=true'
+PDS_ENDPOINT = 'https://skystack.xyz'
+PUBLIC_PROFILE_ENDPOINT = '/api/v1/user/{admin_handle}/public_profile'
+RECOMMENDATIONS_ENDPOINT = '/api/v1/recommendations/from/{publication_id}' 
