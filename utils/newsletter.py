@@ -118,12 +118,11 @@ class Newsletter:
         """
         Build a newsletter by fetching latest RSS items and calculating post frequency details.
         
-        Returns:
-            dict: A dictionary containing updated newsletter statistics:
-                - 'post_items' (list): New items from the RSS feed.
-                - 'number_of_posts' (int): Updated total number of posts.
-                - 'last_post_time' (str): Timestamp of the most recent post.
-                - 'post_frequency' (float): Updated average post frequency in days.
+        Returns a dictionary containing updated newsletter statistics:
+        - 'post_items' (list): New items from the RSS feed.
+        - 'number_of_posts' (int): Updated total number of posts.
+        - 'last_post_time' (str): Timestamp of the most recent post.
+        - 'post_frequency' (float): Updated average post frequency in days.
         """
         # Default lastBuildDate
         lastBuildDate = datetime.strptime("Fri, 19 Jun 2025 10:04:16 GMT", '%a, %d %b %Y %H:%M:%S %Z')

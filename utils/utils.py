@@ -3,6 +3,8 @@ import feedparser
 import html
 import datetime
 
+from .endpoints import RSS_ENDPOINT
+
 def fetch_json(url):
     """
     General fetch function to get JSON data from a URL.
@@ -18,7 +20,7 @@ def getLatestRSSItems(url, lastBuildDate):
     1. [[title, subtitle, link], ...] for entries newer than lastBuildDate
     2. [published, ...] for those entries
     """
-    feed_url = f"{url.rstrip('/')}/feed"
+    feed_url = url + RSS_ENDPOINT
     feed = feedparser.parse(feed_url)
 
     items = []
@@ -30,7 +32,7 @@ def getLatestRSSItems(url, lastBuildDate):
             entry_time = datetime.datetime(*entry.published_parsed[:6])
             if entry_time > lastBuildDate:
                 items.append({
-                    "title": entry.title,
+                    "title": html.unescape(entry.title),
                     "subtitle": html.unescape(entry.summary),
                     "link": entry.link
                 })
