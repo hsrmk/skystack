@@ -1,7 +1,7 @@
 from .utils import fetch_json
 from .endpoints import PUBLIC_PROFILE_ENDPOINT, RECOMMENDATIONS_ENDPOINT, ARCHIVE_ENDPOINT
 from datetime import datetime
-
+from .utils import fetch_json, getLatestRSSItems, getPostFreqDetails
 class Newsletter:
     def __init__(self, url):
         self.url = url.rstrip('/')
@@ -112,4 +112,53 @@ class Newsletter:
             'numberOfPosts': numberOfPosts,
             'lastPostTime': lastPostTime,
             'postFrequency': postFrequency
+        }
+
+    def buildNewsletter(self):
+        """
+        Build a newsletter by fetching latest RSS items and calculating post frequency details.
+        
+        Returns:
+            dict: A dictionary containing updated newsletter statistics:
+                - 'post_items' (list): New items from the RSS feed.
+                - 'number_of_posts' (int): Updated total number of posts.
+                - 'last_post_time' (str): Timestamp of the most recent post.
+                - 'post_frequency' (float): Updated average post frequency in days.
+        """
+        # Default lastBuildDate
+        lastBuildDate = datetime.strptime("Fri, 19 Jun 2025 10:04:16 GMT", '%a, %d %b %Y %H:%M:%S %Z')
+        
+        # Fetch latest RSS items
+        items, published_list = getLatestRSSItems(self.url, lastBuildDate)
+        
+        # Print items and published list
+        print("RSS Items:")
+        for item in items:
+            print(f"Title: {item['title']}")
+            print(f"Subtitle: {item['subtitle']}")
+            print(f"Link: {item['link']}")
+            print("---")
+        
+        print("\nPublished List:")
+        print(published_list)
+        
+        # Call getPostFreqDetails
+        post_freq_details = getPostFreqDetails(
+            numberOfPosts=100,
+            lastPostTime="Fri, 19 Jun 2020 10:04:16 GMT",
+            postFrequency=1.0,  # 1 day
+            publishedList=published_list
+        )
+        
+        # Print post frequency details
+        print("\nPost Frequency Details:")
+        print(f"Number of Posts: {post_freq_details['numberOfPosts']}")
+        print(f"Last Post Time: {post_freq_details['lastPostTime']}")
+        print(f"Post Frequency: {post_freq_details['postFrequency']} days")
+        
+        return {
+            'post_items': items,
+            'number_of_posts': post_freq_details['numberOfPosts'],
+            'last_post_time': post_freq_details['lastPostTime'],
+            'post_frequency': post_freq_details['postFrequency']
         }

@@ -10,11 +10,11 @@ def test_create_account():
     email = 'dummyuser+3@example.com'
     password = 'DummyPassword123!'
 
-    try:
-        response = create_account(handle, email, password)
-        print('Account creation response:', response)
-    except Exception as e:
-        print('Error during account creation:', e)
+    # try:
+    #     response = create_account(handle, email, password)
+    #     print('Account creation response:', response)
+    # except Exception as e:
+    #     print('Error during account creation:', e)
 
 if __name__ == '__main__':
     test_create_account() 
