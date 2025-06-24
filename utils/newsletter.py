@@ -92,7 +92,8 @@ class Newsletter:
                 'subtitle': post.get('subtitle'),
                 'link': post.get('canonical_url'),
                 'id': post.get('id'),
-                'thumbnail_url': post.get('cover_image')
+                'thumbnail_url': post.get('cover_image'),
+                'post_date': post.get('post_date')
             }
             for post in posts
         ]

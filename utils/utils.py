@@ -34,7 +34,8 @@ def getLatestRSSItems(url, lastBuildDate):
                 item = {
                     "title": html.unescape(entry.title),
                     "subtitle": html.unescape(entry.summary),
-                    "link": entry.link
+                    "link": entry.link,
+                    "post_date": entry_time.isoformat() + 'Z'
                 }
                 
                 # Add thumbnail URL if enclosure exists in links
@@ -44,7 +45,7 @@ def getLatestRSSItems(url, lastBuildDate):
                             thumbnail_url = link['href']
                             break
                         
-                item["thumbnail_url"] = thumbnail_url | None
+                item["thumbnail_url"] = thumbnail_url
                 items.append(item)
                 published_list.append(entry.published)
             else:
