@@ -66,7 +66,7 @@ class Newsletter:
         """
         Fetches up to `limit` posts, paginating as needed (max 20 per request).
         Returns:
-        - postsArray: [title, subtitle, link, id]
+        - postsArray: [title, subtitle, link, id, thumbnail_url]
         - numberOfPosts: number of posts returned
         - lastPostTime: post_date of the latest post (arr[0])
         - postFrequency: average time (in days) between posts
@@ -91,7 +91,8 @@ class Newsletter:
                 'title': post.get('title'),
                 'subtitle': post.get('subtitle'),
                 'link': post.get('canonical_url'),
-                'id': post.get('id')
+                'id': post.get('id'),
+                'thumbnail_url': post.get('cover_image')
             }
             for post in posts
         ]

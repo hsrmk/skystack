@@ -2,11 +2,11 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.admin import create_account
+from utils.admin import create_account, delete_account
 
 def test_create_account():
     # Dummy data for testing
-    username = 'me'
+    username = 'testuser'
 
     try:
         response = create_account(username)

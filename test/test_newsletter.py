@@ -59,7 +59,8 @@ DUMMY_POSTS_DATA = [
         "title": "Coming soon",
         "post_date": "2021-09-30T07:47:35.496Z",
         "canonical_url": "https://hasir.substack.com/p/coming-soon",
-        "subtitle": None
+        "subtitle": None,
+        "cover_image": None
     }
 ]
 
@@ -108,7 +109,8 @@ def test_get_posts(mock_fetch):
             'title': 'Coming soon',
             'subtitle': None,
             'link': 'https://hasir.substack.com/p/coming-soon',
-            'id': 41997751
+            'id': 41997751,
+            "thumbnail_url": None
         }
     ]
     assert result['numberOfPosts'] == 1

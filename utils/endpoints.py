@@ -1,5 +1,6 @@
-NEWSLETTER_USERS_RANKED = '/api/v1/publication/users/ranked?public=true'
 PDS_ENDPOINT = 'https://skystack.xyz'
+PDS_USERNAME_EXTENSION = '.skystack.xyz'
+NEWSLETTER_USERS_RANKED = '/api/v1/publication/users/ranked?public=true'
 PUBLIC_PROFILE_ENDPOINT = '/api/v1/user/{admin_handle}/public_profile'
 RECOMMENDATIONS_ENDPOINT = '/api/v1/recommendations/from/{publication_id}'
 ARCHIVE_ENDPOINT = '/api/v1/archive?sort=new&offset={offset}&limit={limit}'

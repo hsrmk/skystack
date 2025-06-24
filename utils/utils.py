@@ -3,7 +3,7 @@ import feedparser
 import html
 import datetime
 
-from .endpoints import RSS_ENDPOINT
+from endpoints import RSS_ENDPOINT
 
 def fetch_json(url):
     """
@@ -17,7 +17,7 @@ def fetch_json(url):
 def getLatestRSSItems(url, lastBuildDate):
     """
     Fetches RSS feed and returns two arrays:
-    1. [[title, subtitle, link], ...] for entries newer than lastBuildDate
+    1. [[title, subtitle, link, thumbnail_url], ...] for entries newer than lastBuildDate
     2. [published, ...] for those entries
     """
     feed_url = url + RSS_ENDPOINT
@@ -31,16 +31,26 @@ def getLatestRSSItems(url, lastBuildDate):
         if hasattr(entry, 'published_parsed') and entry.published_parsed:
             entry_time = datetime.datetime(*entry.published_parsed[:6])
             if entry_time > lastBuildDate:
-                items.append({
+                item = {
                     "title": html.unescape(entry.title),
                     "subtitle": html.unescape(entry.summary),
                     "link": entry.link
-                })
+                }
+                
+                # Add thumbnail URL if enclosure exists in links
+                if hasattr(entry, 'links') and entry.links:
+                    for link in entry.links:
+                        if link.get('rel') == 'enclosure' and link.get('type', '').startswith('image/'):
+                            thumbnail_url = link['href']
+                            break
+                        
+                item["thumbnail_url"] = thumbnail_url | None
+                items.append(item)
                 published_list.append(entry.published)
             else:
                 break
-        else:
-            continue
+    print(items)
+    print(published_list)
     return items, published_list
 
 def getPostFreqDetails(numberOfPosts, lastPostTime, postFrequency, publishedList):
@@ -88,3 +98,6 @@ def getPostFreqDetails(numberOfPosts, lastPostTime, postFrequency, publishedList
         'lastPostTime': lastPostTime,
         'postFrequency': new_postFrequency
     }
+
+
+getLatestRSSItems('https://noahpinion.substack.com/', datetime.datetime.strptime('Fri, 20 Jun 2025 10:04:16 GMT', '%a, %d %b %Y %H:%M:%S %Z'))
