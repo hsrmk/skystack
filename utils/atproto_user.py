@@ -50,7 +50,7 @@ class AtprotoUser:
         )
         return profile_response
 
-    def createPost(self, title, subtitle, link, thumbnail_url, post_date):
+    def createEmbededLinkPost(self, title, subtitle, link, thumbnail_url, post_date):
         """
         Creates a new post with a link card embed.
 

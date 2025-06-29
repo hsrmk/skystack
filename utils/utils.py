@@ -17,7 +17,7 @@ def fetch_json(url):
 def getLatestRSSItems(url, lastBuildDate):
     """
     Fetches RSS feed and returns two arrays:
-    1. [[title, subtitle, link, thumbnail_url], ...] for entries newer than lastBuildDate
+    1. [[title, subtitle, link, thumbnail_url, post_date], ...] for entries newer than lastBuildDate
     2. [published, ...] for those entries
     """
     feed_url = url + RSS_ENDPOINT

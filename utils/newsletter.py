@@ -62,7 +62,7 @@ class Newsletter:
                     })
         return rec_newsletters, rec_users
 
-    def getPosts(self, limit):
+    def getPosts(self, limit=50):
         """
         Fetches up to `limit` posts, paginating as needed (max 20 per request).
         Returns:
@@ -116,7 +116,7 @@ class Newsletter:
             'postFrequency': postFrequency
         }
 
-    def buildNewsletter(self):
+    def getNewsletterDataSinceLastBuild(self):
         """
         Build a newsletter by fetching latest RSS items and calculating post frequency details.
         
