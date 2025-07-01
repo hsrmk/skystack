@@ -1,6 +1,6 @@
-from .endpoints import PUBLIC_PROFILE_ENDPOINT, RECOMMENDATIONS_ENDPOINT, ARCHIVE_ENDPOINT
+from utils.endpoints import PUBLIC_PROFILE_ENDPOINT, RECOMMENDATIONS_ENDPOINT, ARCHIVE_ENDPOINT
 from datetime import datetime
-from .utils import fetch_json, getLatestRSSItems, getPostFreqDetails
+from utils.utils import fetch_json, getLatestRSSItems, getPostFreqDetails
 class Newsletter:
     def __init__(self, url):
         self.url = url.rstrip('/')

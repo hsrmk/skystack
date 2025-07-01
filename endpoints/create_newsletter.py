@@ -40,7 +40,7 @@ def create_newsletter_route():
             # 4. create_account
             subdomain = publication['subdomain']
             account_response = create_account(subdomain)
-            if not account_response or 'handle' not in account_response:
+            if not account_response:
                 yield json.dumps({"type": "error", "message": "Account creation failed"}) + '\n'
                 return
 

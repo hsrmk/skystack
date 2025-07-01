@@ -1,5 +1,5 @@
-from .utils import fetch_json
-from .endpoints import NEWSLETTER_USERS_RANKED
+from utils.utils import fetch_json
+from utils.endpoints import NEWSLETTER_USERS_RANKED
 
 class User:
     def __init__(self, url):

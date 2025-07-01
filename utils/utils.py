@@ -3,7 +3,7 @@ import feedparser
 import html
 from datetime import datetime, timezone
 
-from .endpoints import RSS_ENDPOINT
+from utils.endpoints import RSS_ENDPOINT
 
 def fetch_json(url):
     """

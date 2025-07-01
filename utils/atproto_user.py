@@ -3,7 +3,7 @@ import requests
 from io import BytesIO
 import os
 
-from .endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
+from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
 
 class AtprotoUser:
     """A class to manage a user's AT Protocol (Bluesky) account."""

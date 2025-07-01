@@ -1,7 +1,7 @@
 from atproto import Client, models
 import base64
 import os
-from .endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
+from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
 
 def create_invite_code(client, use_count: int = 1, for_account: str = None):
     data = models.ComAtprotoServerCreateInviteCode.Data(
