@@ -4,7 +4,7 @@ from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account
 from utils.atproto_user import AtprotoUser
-from utils.firebase import Firebase
+from utils.firebase import FirebaseClient
 from utils.create_cloud_task import create_cloud_task
 
 def create_newsletter_route():
@@ -77,7 +77,7 @@ def create_newsletter_route():
             yield json.dumps({"type": "finalizing", "message": "Finalizing setup..."}) + '\n'
 
             # 10. createNewsletter in Firebase
-            firebase = Firebase()
+            firebase = FirebaseClient()
             firebase.createNewsletter(
                 publication['publication_id'],
                 publication['name'],
