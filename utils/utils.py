@@ -1,9 +1,9 @@
 import requests
 import feedparser
 import html
-import datetime
+from datetime import datetime, timezone
 
-from endpoints import RSS_ENDPOINT
+from .endpoints import RSS_ENDPOINT
 
 def fetch_json(url):
     """
@@ -22,22 +22,33 @@ def getLatestRSSItems(url, lastBuildDate):
     """
     feed_url = url + RSS_ENDPOINT
     feed = feedparser.parse(feed_url)
+    lastBuildDate = datetime.fromisoformat(lastBuildDate.replace("Z", "+00:00"))
 
     items = []
-    published_list = []
+    post_dates_list = []
 
     for entry in feed.entries:
         # entry.published_parsed is a time.struct_time
         if hasattr(entry, 'published_parsed') and entry.published_parsed:
-            entry_time = datetime.datetime(*entry.published_parsed[:6])
+            entry_time = datetime(*entry.published_parsed[:6])
+            # Make entry_time timezone-aware if naive
+            if entry_time.tzinfo is None or entry_time.tzinfo.utcoffset(entry_time) is None:
+                entry_time = entry_time.replace(tzinfo=timezone.utc)
+            if lastBuildDate.tzinfo is None or lastBuildDate.tzinfo.utcoffset(lastBuildDate) is None:
+                lastBuildDate = lastBuildDate.replace(tzinfo=timezone.utc)
+            
             if entry_time > lastBuildDate:
+                post_date = entry_time.isoformat().replace('+00:00', 'Z')
+
                 item = {
                     "title": html.unescape(entry.title),
                     "subtitle": html.unescape(entry.summary),
                     "link": entry.link,
-                    "post_date": entry_time.isoformat() + 'Z'
+                    "post_date": post_date
                 }
                 
+                # Set thumbnail_url to None by default
+                thumbnail_url = None
                 # Add thumbnail URL if enclosure exists in links
                 if hasattr(entry, 'links') and entry.links:
                     for link in entry.links:
@@ -47,20 +58,18 @@ def getLatestRSSItems(url, lastBuildDate):
                         
                 item["thumbnail_url"] = thumbnail_url
                 items.append(item)
-                published_list.append(entry.published)
+                post_dates_list.append(post_date)
             else:
                 break
-    print(items)
-    print(published_list)
-    return items, published_list
 
-def getPostFreqDetails(numberOfPosts, lastPostTime, postFrequency, publishedList):
+    return items, post_dates_list
+
+def getPostFreqDetails(numberOfPosts, postFrequency, post_dates_list):
     """
     Calculate post frequency details by combining existing data with new published list.
     
     Args:
         numberOfPosts (int): Current number of posts
-        lastPostTime (str): Last post time in string format. eg: 'Fri, 20 Jun 2020 10:04:16 GMT'
         postFrequency (float): Current average post frequency
         publishedList (list): List of published times (oldest to latest). eg: ['Fri, 20 Jun 2020 10:04:16 GMT']
     
@@ -68,16 +77,16 @@ def getPostFreqDetails(numberOfPosts, lastPostTime, postFrequency, publishedList
         dict: Updated post frequency details
     """
     # Update number of posts
-    numberOfPosts += len(publishedList)
+    numberOfPosts += len(post_dates_list)
     
     # Update last post time (use the latest from publishedList)
-    if publishedList:
-        lastPostTime = publishedList[0]
+    if post_dates_list:
+        lastBuildDate = post_dates_list[0]
     
     # Calculate new post frequency
-    if len(publishedList) > 1:
+    if len(post_dates_list) > 1:
         # Convert published times to datetime objects
-        post_dates = [datetime.datetime.strptime(pub, '%a, %d %b %Y %H:%M:%S %Z') for pub in publishedList]
+        post_dates = [datetime.fromisoformat(pub.replace('Z', '+00:00')) for pub in post_dates_list]
         
         # Calculate time differences in days
         time_diffs = [
@@ -96,9 +105,6 @@ def getPostFreqDetails(numberOfPosts, lastPostTime, postFrequency, publishedList
     
     return {
         'numberOfPosts': numberOfPosts,
-        'lastPostTime': lastPostTime,
+        'lastBuildDate': lastBuildDate,
         'postFrequency': new_postFrequency
     }
-
-
-getLatestRSSItems('https://noahpinion.substack.com/', datetime.datetime.strptime('Fri, 20 Jun 2025 10:04:16 GMT', '%a, %d %b %Y %H:%M:%S %Z'))

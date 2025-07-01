@@ -1,11 +1,24 @@
 ## Tests
 
-Run tests using:
+Run individual tests using:
 
 ```
-pytest test/test_newsletter.py
+pytest -s -vv test/test_newsletter.py
+```
+
+Run all tests using:
+
+```
+python3 run_tests.py
 ```
 
 ## AT Proto Wiki Search
 
 https://deepwiki.com/search/how-to-create-an-account-on-a_72d896ba-889d-462c-a3bd-f60f70d9be79
+
+## Activate Env
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```

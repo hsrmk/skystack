@@ -1,4 +1,3 @@
-from .utils import fetch_json
 from .endpoints import PUBLIC_PROFILE_ENDPOINT, RECOMMENDATIONS_ENDPOINT, ARCHIVE_ENDPOINT
 from datetime import datetime
 from .utils import fetch_json, getLatestRSSItems, getPostFreqDetails
@@ -98,7 +97,8 @@ class Newsletter:
             for post in posts
         ]
         numberOfPosts = len(postsArray)
-        lastPostTime = posts[0]['post_date'] if posts else None
+        lastBuildDate = posts[0]['post_date'] if posts else None
+        
         # Calculate postFrequency (average days between posts)
         if numberOfPosts > 1:
             post_dates = [datetime.fromisoformat(post['post_date'].replace('Z', '+00:00')) for post in posts]
@@ -109,14 +109,15 @@ class Newsletter:
             postFrequency = sum(time_diffs) / len(time_diffs)
         else:
             postFrequency = None
+
         return {
             'postsArray': postsArray,
             'numberOfPosts': numberOfPosts,
-            'lastPostTime': lastPostTime,
+            'lastBuildDate': lastBuildDate,
             'postFrequency': postFrequency
         }
 
-    def getNewsletterDataSinceLastBuild(self):
+    def getNewsletterDataSinceLastBuild(self, lastBuildDate, numberOfPosts, postFrequency):
         """
         Build a newsletter by fetching latest RSS items and calculating post frequency details.
         
@@ -126,40 +127,20 @@ class Newsletter:
         - 'last_post_time' (str): Timestamp of the most recent post.
         - 'post_frequency' (float): Updated average post frequency in days.
         """
-        # Default lastBuildDate
-        lastBuildDate = datetime.strptime("Fri, 19 Jun 2025 10:04:16 GMT", '%a, %d %b %Y %H:%M:%S %Z')
         
         # Fetch latest RSS items
-        items, published_list = getLatestRSSItems(self.url, lastBuildDate)
-        
-        # Print items and published list
-        print("RSS Items:")
-        for item in items:
-            print(f"Title: {item['title']}")
-            print(f"Subtitle: {item['subtitle']}")
-            print(f"Link: {item['link']}")
-            print("---")
-        
-        print("\nPublished List:")
-        print(published_list)
+        items, post_dates_list = getLatestRSSItems(self.url, lastBuildDate)
         
         # Call getPostFreqDetails
         post_freq_details = getPostFreqDetails(
-            numberOfPosts=100,
-            lastPostTime="Fri, 19 Jun 2020 10:04:16 GMT",
-            postFrequency=1.0,  # 1 day
-            publishedList=published_list
+            numberOfPosts=numberOfPosts,
+            postFrequency=postFrequency,  # n days
+            post_dates_list=post_dates_list
         )
-        
-        # Print post frequency details
-        print("\nPost Frequency Details:")
-        print(f"Number of Posts: {post_freq_details['numberOfPosts']}")
-        print(f"Last Post Time: {post_freq_details['lastPostTime']}")
-        print(f"Post Frequency: {post_freq_details['postFrequency']} days")
-        
+    
         return {
             'post_items': items,
             'number_of_posts': post_freq_details['numberOfPosts'],
-            'last_post_time': post_freq_details['lastPostTime'],
+            'last_build_date': post_freq_details['lastBuildDate'],
             'post_frequency': post_freq_details['postFrequency']
         }

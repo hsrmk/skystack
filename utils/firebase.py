@@ -75,7 +75,7 @@ class FirebaseClient:
     def getNewslettersToBeBuilt(self):
         """
         Returns a list of newsletters that are due to be built (lastBuildDate + postFrequency < current time).
-        lastBuildDate is in RFC 1123 format, postFrequency is in seconds.
+        lastBuildDate is in ISO 8601 format, postFrequency is in days.
         :return: list of dicts with sub_domain, custom_domain, lastBuildDate, numberOfPostsAdded, postFrequency
         """
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -89,8 +89,8 @@ class FirebaseClient:
 
             try:
                 if lastBuildDate_str:
-                    date_str = lastBuildDate_str.replace("GMT", "UTC")
-                    lastBuildDate = datetime.datetime.strptime(date_str, '%a, %d %b %Y %H:%M:%S %Z')
+                    # Parse ISO 8601 format with 'Z' (e.g., 2024-06-07T12:34:56Z)
+                    lastBuildDate = datetime.datetime.strptime(lastBuildDate_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
                 else:
                     lastBuildDate = None
             except Exception:
@@ -102,7 +102,7 @@ class FirebaseClient:
 
             
             if lastBuildDate and postFrequency is not None:
-                next_build_time = lastBuildDate + datetime.timedelta(seconds=postFrequency)
+                next_build_time = lastBuildDate + datetime.timedelta(days=postFrequency)
                 skip_check = data.get("skipPostFrequencyCheck", False)
                 if next_build_time < now or skip_check:
                     newsletters_to_build.append({
@@ -112,8 +112,10 @@ class FirebaseClient:
                         "numberOfPostsAdded": data.get("numberOfPostsAdded"),
                         "postFrequency": postFrequency
                     })
+                    
                     # If skipPostFrequencyCheck was True, set it to False after adding
                     if skip_check:
                         doc_ref = self.db.collection("newsletters").document(data.get("sub_domain"))
                         doc_ref.update({"skipPostFrequencyCheck": False})
+        
         return newsletters_to_build
