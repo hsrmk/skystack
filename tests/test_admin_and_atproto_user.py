@@ -16,7 +16,7 @@ def test_admin_and_atproto_user():
     assert create_response.handle == "runningtests.skystack.xyz", f"Expected handle to be 'runningtests.skystack.xyz', got {getattr(create_response, 'handle', None)}"
 
     # Use AtprotoUser to test profile and post features
-    user = AtprotoUser(username)
+    user = AtprotoUser(username, "https://hasir.substack.com/")
 
     # Test updateProfileDetails
     profile_response = user.updateProfileDetails(

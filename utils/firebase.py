@@ -119,3 +119,13 @@ class FirebaseClient:
                         doc_ref.update({"skipPostFrequencyCheck": False})
         
         return newsletters_to_build
+
+    def checkIfNewsletterExists(self, subdomain):
+        """
+        Checks if a newsletter document exists in the 'newsletters' collection for the given subdomain.
+        :param subdomain: str
+        :return: bool (True if exists, False otherwise)
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc = doc_ref.get()
+        return doc.exists

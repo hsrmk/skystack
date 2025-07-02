@@ -1,13 +1,14 @@
 from atproto import Client, models
+import os
 import requests
 from io import BytesIO
-import os
+from PIL import Image
 
 from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
 
 class AtprotoUser:
     """A class to manage a user's AT Protocol (Bluesky) account."""
-    def __init__(self, username):
+    def __init__(self, username, url):
         """
         Initializes the Atproto client and logs in the user.
 
@@ -15,6 +16,7 @@ class AtprotoUser:
             username (str): The user's handle without the PDS extension.
         """
         self.username = username
+        self.url = url
         self.user_login_pass = os.environ.get("USER_LOGIN_PASS")
         if not self.user_login_pass:
             raise ValueError("USER_LOGIN_PASS environment variables must be set.")
@@ -39,7 +41,7 @@ class AtprotoUser:
         blob_response = self.uploadBlob(profile_pic_url)
         profile_record = models.AppBskyActorProfile.Record(
             display_name=display_name,
-            description=description,
+            description=description + " \n\n\n" + "This is an automated Substack account of " + self.url + "\n" + "Discover more at: @skystack.xyz",
             avatar=blob_response.blob,
         )
         # Update the profile using the profile record namespace
@@ -116,5 +118,33 @@ class AtprotoUser:
         response = requests.get(image_url)
         response.raise_for_status()
         image_data = BytesIO(response.content).read()
+
+        # Check if image size is greater than 500KB (512000 bytes)
+        if len(image_data) > 512000:
+            img = Image.open(BytesIO(image_data))
+            img_format = img.format if img.format else 'JPEG'
+            # Start with quality 85, reduce by 5, but if still too large at quality=20, resize image
+            quality = 85
+            buffer = BytesIO()
+            while True:
+                buffer.seek(0)
+                buffer.truncate()
+                img.save(buffer, format=img_format, quality=quality, optimize=True)
+                if buffer.tell() <= 512000:
+                    break
+                if quality > 20:
+                    quality -= 5
+                else:
+                    # If quality is already low, start resizing
+                    width, height = img.size
+                    # Reduce size by 10% each iteration
+                    new_width = int(width * 0.9)
+                    new_height = int(height * 0.9)
+                    if new_width < 1 or new_height < 1:
+                        # If image is too small, break to avoid errors
+                        break
+                    img = img.resize((new_width, new_height), Image.LANCZOS)
+            image_data = buffer.getvalue()
+
         blob_response = self.client.com.atproto.repo.upload_blob(image_data)
         return blob_response

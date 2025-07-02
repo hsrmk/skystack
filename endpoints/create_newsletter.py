@@ -27,7 +27,6 @@ def create_newsletter_route():
             if not admin:
                 yield json.dumps({"type": "error", "message": "Could not fetch newsletter admin"}) + '\n'
                 return
-            yield json.dumps({"type": "adminFetched", **admin}) + '\n'
 
             # 3. getPublication
             newsletter = Newsletter(url)
@@ -35,22 +34,34 @@ def create_newsletter_route():
             if not publication:
                 yield json.dumps({"type": "error", "message": "Could not fetch publication details"}) + '\n'
                 return
-            yield json.dumps({"type": "publicationFetched", **publication}) + '\n'
 
             # 4. create_account
+            firebase = FirebaseClient()
+
             subdomain = publication['subdomain']
+            if firebase.checkIfNewsletterExists(subdomain):
+                yield json.dumps({
+                    "type": "duplicate_newsletter", 
+                    "message": "Newsletter already exists",
+                    "account": subdomain,
+                    "name": publication['name'],
+                    "description": publication['hero_text'],
+                    "logo_url": publication['logo_url']    
+                }) + '\n'
+                return
+            
             account_response = create_account(subdomain)
             if not account_response:
                 yield json.dumps({"type": "error", "message": "Account creation failed"}) + '\n'
                 return
 
             # 5. updateProfileDetails
-            at_user = AtprotoUser(subdomain)
-            profile_response = at_user.updateProfileDetails(
+            at_user = AtprotoUser(subdomain, url)
+            at_user.updateProfileDetails(
                 publication['name'], publication['hero_text'], publication['logo_url']
             )
             yield json.dumps({
-                "type": "accountCreation",
+                "type": "account_created",
                 "account": subdomain,
                 "name": publication['name'],
                 "description": publication['hero_text'],
@@ -58,26 +69,35 @@ def create_newsletter_route():
             }) + '\n'
 
             # 6. creatingPosts event
-            yield json.dumps({"type": "creatingPosts", "message": "Importing posts..."}) + '\n'
+            yield json.dumps({"type": "creating_posts", "message": "Importing posts..."}) + '\n'
 
             # 7. getPosts
-            posts_info = newsletter.getPosts()
+            posts_info = newsletter.getPosts(limit=20)
             posts = posts_info.get('postsArray', [])
+            posts_added = 0
             for post in posts:
-                at_user.createEmbededLinkPost(
-                    post['title'],
-                    post['subtitle'],
-                    post['link'],
-                    post['thumbnail_url'],
-                    post['post_date']
-                )
-            yield json.dumps({"type": "postsAdded", "message": "Imported posts..."}) + '\n'
+                try:
+                    post_response = at_user.createEmbededLinkPost(
+                        post['title'],
+                        post['subtitle'],
+                        post['link'],
+                        post['thumbnail_url'],
+                        post['post_date']
+                    )
+                    print(post_response)
+                    posts_added += 1
+                except Exception as e:
+                    print(f"Skipping post {post['link']} due to error: {e}")
+
+            if posts_added == 0:
+                raise Exception("No posts were added.")
+            
+            yield json.dumps({"type": "posts_added", "message": "Imported posts..."}) + '\n'
 
             # 9. finalizing
             yield json.dumps({"type": "finalizing", "message": "Finalizing setup..."}) + '\n'
 
             # 10. createNewsletter in Firebase
-            firebase = FirebaseClient()
             firebase.createNewsletter(
                 publication['publication_id'],
                 publication['name'],
