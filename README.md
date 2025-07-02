@@ -22,3 +22,11 @@ https://deepwiki.com/search/how-to-create-an-account-on-a_72d896ba-889d-462c-a3b
 python3 -m venv .venv
 source .venv/bin/activate
 ```
+
+## Testing /createNewsletter endpoint
+
+```
+curl -N -X POST {CLOUD_RUN_ENDPOINT}/createNewsletter \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://www.noahpinion.blog/"}'
+```

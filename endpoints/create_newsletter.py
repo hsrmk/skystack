@@ -1,5 +1,6 @@
 from flask import request, Response, stream_with_context
 import json
+import os
 from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account
@@ -113,7 +114,12 @@ def create_newsletter_route():
             )
 
             # 11. create_cloud_task for /addNewsletterUserGraph
-            endpoint = request.url_root.rstrip('/') + '/addNewsletterUserGraph'
+            cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
+            if not cloud_run_endpoint:
+                yield json.dumps({"type": "partial_error", "message": "Account created and posts imported, but complete bridging."}) + '\n'
+                return
+            
+            endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
             task_payload = {
                 "url": url,
                 "subdomain": publication['subdomain'],
