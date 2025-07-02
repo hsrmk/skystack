@@ -27,18 +27,20 @@ def create_newsletter_route():
             if not admin:
                 yield json.dumps({"type": "error", "message": "Could not fetch newsletter admin"}) + '\n'
                 return
-
+            yield json.dumps({"type": "admin_fetched", **admin}) + '\n'
+            
             # 3. getPublication
             newsletter = Newsletter(url)
             publication = newsletter.getPublication(admin['admin_handle'])
             if not publication:
                 yield json.dumps({"type": "error", "message": "Could not fetch publication details"}) + '\n'
                 return
-
+            yield json.dumps({"type": "publication_fetched", **publication}) + '\n'
+            
             # 4. create_account
             firebase = FirebaseClient()
-
             subdomain = publication['subdomain']
+            
             if firebase.checkIfNewsletterExists(subdomain):
                 yield json.dumps({
                     "type": "duplicate_newsletter", 

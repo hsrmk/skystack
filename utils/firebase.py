@@ -1,17 +1,37 @@
 import os
-import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 import datetime
 
 class FirebaseClient:
     def __init__(self):
-        creds_json = os.environ.get("FIREBASE_CREDENTIALS_JSON")
-        creds_dict = json.loads(creds_json)
+        creds_dict = {
+            "type": os.environ.get("FIREBASE_TYPE"),
+            "project_id": os.environ.get("FIREBASE_PROJECT_ID"),
+            "private_key_id": os.environ.get("FIREBASE_PRIVATE_KEY_ID"),
+            "private_key": os.environ.get("FIREBASE_PRIVATE_KEY").replace('\\n', '\n'),
+            "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL"),
+            "client_id": os.environ.get("FIREBASE_CLIENT_ID"),
+            "auth_uri": os.environ.get("FIREBASE_AUTH_URI"),
+            "token_uri": os.environ.get("FIREBASE_TOKEN_URI"),
+            "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+            "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL"),
+            "universe_domain": os.environ.get("FIREBASE_UNIVERSE_DOMAIN")
+        }
         cred = credentials.Certificate(creds_dict)
         if not firebase_admin._apps:
             firebase_admin.initialize_app(cred)
         self.db = firestore.client()
+
+    def add_to_collection(self, collection_name, document_id, data):
+        """
+        Adds or updates a document in the specified Firestore collection.
+        :param collection_name: str
+        :param document_id: str
+        :param data: dict
+        """
+        doc_ref = self.db.collection(collection_name).document(document_id)
+        doc_ref.set(data)
 
     def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded):
         """
