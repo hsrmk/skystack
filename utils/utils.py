@@ -3,7 +3,7 @@ import feedparser
 import html
 from datetime import datetime, timezone
 
-from utils.endpoints import RSS_ENDPOINT
+from utils.endpoints import RSS_ENDPOINT, SUBSTACK_CDN
 
 def fetch_json(url):
     """
@@ -53,7 +53,7 @@ def getLatestRSSItems(url, lastBuildDate):
                 if hasattr(entry, 'links') and entry.links:
                     for link in entry.links:
                         if link.get('rel') == 'enclosure' and link.get('type', '').startswith('image/'):
-                            thumbnail_url = link['href']
+                            thumbnail_url = normalize_substack_image_url(link['href'])
                             break
                         
                 item["thumbnail_url"] = thumbnail_url
@@ -108,3 +108,16 @@ def getPostFreqDetails(numberOfPosts, postFrequency, post_dates_list):
         'lastBuildDate': lastBuildDate,
         'postFrequency': new_postFrequency
     }
+
+def normalize_substack_image_url(image_url):
+    """
+    If the image_url is already from substackcdn.com, return as is.
+    Otherwise, wrap it with the substackcdn.com image fetch URL.
+    """
+    if image_url is None:
+        return None
+    # Accept both https://substackcdn.com and https://www.substackcdn.com
+    if image_url.startswith("https://substackcdn.com/") or image_url.startswith("https://www.substackcdn.com/"):
+        return image_url
+    
+    return SUBSTACK_CDN + image_url

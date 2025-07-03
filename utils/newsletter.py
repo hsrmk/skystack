@@ -1,6 +1,6 @@
 from utils.endpoints import PUBLIC_PROFILE_ENDPOINT, RECOMMENDATIONS_ENDPOINT, ARCHIVE_ENDPOINT
 from datetime import datetime
-from utils.utils import fetch_json, getLatestRSSItems, getPostFreqDetails
+from utils.utils import fetch_json, getLatestRSSItems, getPostFreqDetails, normalize_substack_image_url
 class Newsletter:
     def __init__(self, url):
         self.url = url.rstrip('/')
@@ -28,7 +28,7 @@ class Newsletter:
             'subdomain': pub.get('subdomain'),
             'custom_domain': pub.get('custom_domain'),
             'hero_text': pub.get('hero_text'),
-            'logo_url': pub.get('logo_url')
+            'logo_url': normalize_substack_image_url(pub.get('logo_url'))
         }
 
     def getRecommendedPublications(self, publication_id):
@@ -91,7 +91,7 @@ class Newsletter:
                 'subtitle': post.get('subtitle'),
                 'link': post.get('canonical_url'),
                 'id': post.get('id'),
-                'thumbnail_url': post.get('cover_image'),
+                'thumbnail_url': normalize_substack_image_url(post.get('cover_image')),
                 'post_date': post.get('post_date')
             }
             for post in posts
