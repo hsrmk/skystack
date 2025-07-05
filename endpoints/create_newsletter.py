@@ -121,7 +121,6 @@ def create_newsletter_route():
             
             endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
             task_payload = {
-                "url": url,
                 "subdomain": publication['subdomain'],
                 "publication_id": publication['publication_id']
             }

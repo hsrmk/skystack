@@ -127,7 +127,6 @@ class FirebaseClient:
                 if next_build_time < now or skip_check:
                     newsletters_to_build.append({
                         "sub_domain": data.get("sub_domain"),
-                        "custom_domain": data.get("custom_domain"),
                         "lastBuildDate": lastBuildDate_str,
                         "numberOfPostsAdded": data.get("numberOfPostsAdded"),
                         "postFrequency": postFrequency

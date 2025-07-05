@@ -41,7 +41,7 @@ class AtprotoUser:
         blob_response = self.uploadBlob(profile_pic_url)
         profile_record = models.AppBskyActorProfile.Record(
             display_name=display_name,
-            description=description + " \n\n\n" + "This is an automated Substack account of " + self.url + "\n" + "Discover more at: @skystack.xyz",
+            description=description + " \n\n\n" + "This is an automated Substack Account of " + self.url + "\n" + "Discover more/Create at: @skystack.xyz",
             avatar=blob_response.blob,
         )
         # Update the profile using the profile record namespace
