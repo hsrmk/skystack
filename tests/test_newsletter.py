@@ -77,5 +77,5 @@ def test_get_newsletter_data_since_last_build():
         ],
         'number_of_posts': 2,
         'last_build_date': '2025-06-29T15:16:29Z',
-        'post_frequency': 1
+        'post_frequency': 0.5
     }

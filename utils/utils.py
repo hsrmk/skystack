@@ -64,47 +64,61 @@ def getLatestRSSItems(url, lastBuildDate):
 
     return items, post_dates_list
 
-def getPostFreqDetails(numberOfPosts, postFrequency, post_dates_list):
+def getPostFreqDetails(numberOfPosts, postFrequency, lastBuildDate, post_dates_list):
     """
-    Calculate post frequency details by combining existing data with new published list.
+    Calculate post frequency details using an incremental running average.
     
     Args:
         numberOfPosts (int): Current number of posts
-        postFrequency (float): Current average post frequency
-        publishedList (list): List of published times (oldest to latest). eg: ['Fri, 20 Jun 2020 10:04:16 GMT']
+        postFrequency (float): Current average post frequency (in days)
+        lastBuildDate (str): '2025-07-04T14:02:13Z' (ISO String with Z suffix)
+        post_dates_list (list): List of published times (latest to oldest). eg: ['2025-07-04T14:02:13Z'] (ISO String with Z suffix)
     
     Returns:
         dict: Updated post frequency details
     """
     # Update number of posts
-    numberOfPosts += len(post_dates_list)
+    newNumberOfPosts = numberOfPosts + len(post_dates_list)
     
     # Update last post time (use the latest from publishedList)
     if post_dates_list:
         lastBuildDate = post_dates_list[0]
     
-    # Calculate new post frequency
-    if len(post_dates_list) > 1:
+    # Calculate new post frequency using incremental running average
+    if len(post_dates_list) > 0:
         # Convert published times to datetime objects
         post_dates = [datetime.fromisoformat(pub.replace('Z', '+00:00')) for pub in post_dates_list]
         
-        # Calculate time differences in days
+        # If only one new post, augment with lastBuildDate to calculate frequency
+        if len(post_dates_list) == 1:
+            old_last_build = datetime.fromisoformat(lastBuildDate.replace('Z', '+00:00'))
+            # Insert lastBuildDate at the end to create a time series
+            post_dates.append(old_last_build)
+        
+        # Calculate time differences in days between consecutive posts
         time_diffs = [
             (post_dates[i] - post_dates[i+1]).total_seconds() / 86400.0
             for i in range(len(post_dates)-1)
         ]
         
-        # Calculate new average frequency
-        new_postFrequency = sum(time_diffs) / len(time_diffs)
+        # Calculate average frequency from new posts
+        new_posts_avg_frequency = sum(time_diffs) / len(time_diffs)
         
-        # If previous postFrequency exists, take a weighted average
-        if postFrequency is not None:
-            new_postFrequency = (postFrequency + new_postFrequency) / 2
+        # Calculate incremental running average
+        if postFrequency is not None and numberOfPosts > 0:
+            # Weighted average: (old_freq * old_count + new_freq * new_count) / total_count
+            # For single post case, we use 1 as the weight since we're only adding one new data point
+            weight = len(post_dates_list) if len(post_dates_list) > 1 else 1
+            new_postFrequency = (postFrequency * numberOfPosts + new_posts_avg_frequency * weight) / newNumberOfPosts
+        else:
+            # If no previous data, use the new average
+            new_postFrequency = new_posts_avg_frequency
     else:
+        # If no new posts, keep the previous frequency
         new_postFrequency = postFrequency
     
     return {
-        'numberOfPosts': numberOfPosts,
+        'numberOfPosts': newNumberOfPosts,
         'lastBuildDate': lastBuildDate,
         'postFrequency': new_postFrequency
     }

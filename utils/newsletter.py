@@ -135,6 +135,7 @@ class Newsletter:
         post_freq_details = getPostFreqDetails(
             numberOfPosts=numberOfPosts,
             postFrequency=postFrequency,  # n days
+            lastBuildDate=lastBuildDate,
             post_dates_list=post_dates_list
         )
     
