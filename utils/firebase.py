@@ -110,7 +110,7 @@ class FirebaseClient:
             try:
                 if lastBuildDate_str:
                     # Parse ISO 8601 format with 'Z' (e.g., 2024-06-07T12:34:56Z)
-                    lastBuildDate = datetime.datetime.strptime(lastBuildDate_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)
+                    lastBuildDate = datetime.datetime.fromisoformat(lastBuildDate_str.replace('Z', '+00:00'))
                 else:
                     lastBuildDate = None
             except Exception:
