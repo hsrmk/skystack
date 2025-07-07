@@ -3,7 +3,7 @@ import json
 import os
 from utils.user import User
 from utils.newsletter import Newsletter
-from utils.admin import create_account
+from utils.admin import create_account, delete_account
 from utils.atproto_user import AtprotoUser
 from utils.firebase import FirebaseClient
 from utils.create_cloud_task import create_cloud_task
@@ -14,6 +14,7 @@ def create_newsletter_route():
     Expects JSON payload: { "url": "string" }
     """
     def event_stream():
+        subdomain = None
         try:
             data = request.get_json()
             if not data or 'url' not in data:
@@ -93,6 +94,7 @@ def create_newsletter_route():
                     print(f"Skipping post {post['link']} due to error: {e}")
 
             if posts_added == 0:
+                delete_account(subdomain)
                 raise Exception("No posts were added.")
             
             yield json.dumps({"type": "posts_added", "message": "Imported posts..."}) + '\n'
@@ -110,7 +112,7 @@ def create_newsletter_route():
                 publication['logo_url'],
                 posts_info.get('lastBuildDate'),
                 posts_info.get('postFrequency'),
-                posts_info.get('numberOfPosts')
+                posts_added
             )
 
             # 11. create_cloud_task for /addNewsletterUserGraph
@@ -129,6 +131,8 @@ def create_newsletter_route():
             # 12. completed
             yield json.dumps({"type": "completed", "message": "Substack account bridged!"}) + '\n'
         except Exception as e:
+            if subdomain:
+                delete_account(subdomain)
             yield json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"}) + '\n'
 
     return Response(stream_with_context(event_stream()), mimetype='application/json')

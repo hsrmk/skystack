@@ -38,11 +38,16 @@ class AtprotoUser:
         Returns:
             The response from the server after updating the profile.
         """
-        blob_response = self.uploadBlob(profile_pic_url)
+        if profile_pic_url is not None:
+            blob_response = self.uploadBlob(profile_pic_url)
+            avatar_blob = blob_response.blob
+        else:
+            avatar_blob = None
+
         profile_record = models.AppBskyActorProfile.Record(
             display_name=display_name,
             description=description + " \n\n\n" + "This is an automated Substack Account of " + self.url + "\n" + "Discover more/Create at: @skystack.xyz",
-            avatar=blob_response.blob,
+            avatar=avatar_blob,
         )
         # Update the profile using the profile record namespace
         profile_response = self.client.app.bsky.actor.profile.create(

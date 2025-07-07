@@ -28,7 +28,7 @@ class Newsletter:
             'subdomain': pub.get('subdomain'),
             'custom_domain': pub.get('custom_domain'),
             'hero_text': pub.get('hero_text'),
-            'logo_url': normalize_substack_image_url(pub.get('logo_url'))
+            'logo_url': normalize_substack_image_url(pub.get('logo_url')) if pub.get('logo_url') else normalize_substack_image_url(data.get('photo_url'))
         }
 
     def getRecommendedPublications(self, publication_id):
