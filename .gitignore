@@ -175,4 +175,4 @@ cython_debug/
 
 serious-sublime-456107-p3-firebase-adminsdk-fbsvc-bbd40e99e7.json
 
-utils/extras
+flask/utils/extras
