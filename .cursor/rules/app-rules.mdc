@@ -1,0 +1,5 @@
+---
+alwaysApply: false
+---
+
+I am working on a Next.js React Project deployed on Vercel, with Tailwind CSS for styling and sometimes for specific components I use ui/shadcn.

@@ -81,9 +81,9 @@ export default function NavBar() {
 						className="p-2 rounded focus:outline-none"
 					>
 						{menuOpen ? (
-							<X size={24} className="text-slate-200" />
+							<X size={22} className="text-slate-200" />
 						) : (
-							<Menu size={24} className="text-slate-200" />
+							<Menu size={22} className="text-slate-200" />
 						)}
 					</button>
 				</div>
@@ -94,10 +94,10 @@ export default function NavBar() {
 				className={`lg:hidden overflow-hidden transition-[max-height] duration-700 ease-in-out ${menuOpen ? "max-h-96" : "max-h-0"}`}
 			>
 				<div
-					className={`flex flex-col gap-2 mt-6 backdrop-blur-md transition-all duration-500 ${menuOpen ? "opacity-100 blur-0" : "opacity-0 blur-sm pointer-events-none"}`}
+					className={`flex flex-col gap-2 mt-6 transition-all duration-500 ${menuOpen ? "opacity-100 blur-0" : "opacity-0 blur-sm pointer-events-none"}`}
 				>
 					<NavLinks />
-					<LoginButton className="px-5 py-3 my-2 max-w-fit" />
+					<LoginButton className="px-5 py-2 my-2 max-w-fit" />
 				</div>
 			</div>
 		</Box>
