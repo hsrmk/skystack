@@ -1,226 +1,134 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
 import ImageWithTooltip from "@/components/ImageWithTooltip";
+import { newsletterDataJson } from "@/lib/newsletterData";
 
-// Hardcoded data for images and their grid positions
-const heroGridData = [
-	// row, col, image props
-	{
-		row: 0,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 1",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 0,
-		col: 10,
-		src: "/skystack-logo.png",
-		name: "Substack 1",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 1,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 2",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 1,
-		col: 6,
-		src: "/skystack-logo.png",
-		name: "Substack 2",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 2,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 3",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 2,
-		col: 1,
-		src: "/skystack-logo.png",
-		name: "Substack 3",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 2,
-		col: 5,
-		src: "/skystack-logo.png",
-		name: "Bluesky 4",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 2,
-		col: 6,
-		src: "/skystack-logo.png",
-		name: "Substack 4",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 3,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 5",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 3,
-		col: 5,
-		src: "/skystack-logo.png",
-		name: "Substack 5",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 3,
-		col: 6,
-		src: "/skystack-logo.png",
-		name: "Bluesky 6",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 4,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 7",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 4,
-		col: 1,
-		src: "/skystack-logo.png",
-		name: "Substack 6",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 4,
-		col: 5,
-		src: "/skystack-logo.png",
-		name: "Bluesky 8",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 4,
-		col: 6,
-		src: "/skystack-logo.png",
-		name: "Substack 7",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 5,
-		col: 0,
-		src: "/skystack-logo.png",
-		name: "Bluesky 9",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 5,
-		col: 1,
-		src: "/skystack-logo.png",
-		name: "Substack 8",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 5,
-		col: 2,
-		src: "/skystack-logo.png",
-		name: "Bluesky 10",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 5,
-		col: 5,
-		src: "/skystack-logo.png",
-		name: "Substack 9",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	{
-		row: 5,
-		col: 6,
-		src: "/skystack-logo.png",
-		name: "Bluesky 11",
-		substackUrl: "#",
-		skystackUrl: "#",
-	},
-	// 7th row: all columns
-	...Array.from({ length: 11 }, (_, i) => ({
-		row: 6,
-		col: i,
-		src: i % 2 === 0 ? "/skystack-logo.png" : "/skystack-logo.png",
-		name: `Row 7 Col ${i + 1}`,
-		substackUrl: "#",
-		skystackUrl: "#",
-	})),
-];
+interface GridItem {
+	id: number;
+	src: string;
+	name: string;
+	substackUrl: string;
+	skystackUrl: string;
+	col: number;
+	row: number;
+}
 
-const Hero = () => {
+const ITEM_WIDTH = 100;
+const ITEM_HEIGHT = 100;
+const GAP = 30;
+
+export default function Hero() {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const [gridItems, setGridItems] = useState<GridItem[]>([]);
+	const [gridStyles, setGridStyles] = useState({});
+
+	useEffect(() => {
+		const calculateGrid = () => {
+			if (!containerRef.current) return;
+
+			const { offsetWidth, offsetHeight } = containerRef.current;
+			const columns = Math.floor(
+				(offsetWidth + GAP) / (ITEM_WIDTH + GAP)
+			);
+			const rows = Math.floor((offsetHeight + GAP) / (ITEM_HEIGHT + GAP));
+
+			if (columns <= 0 || rows <= 0) {
+				setGridItems([]);
+				return;
+			}
+
+			setGridStyles({
+				display: "inline-grid",
+				gridTemplateColumns: `repeat(${columns}, ${ITEM_WIDTH}px)`,
+				gridTemplateRows: `repeat(${rows}, ${ITEM_HEIGHT}px)`,
+				gap: `${GAP}px`,
+			});
+
+			const items: GridItem[] = [];
+			let dataIndex = 0;
+
+			for (let r = 0; r < rows; r++) {
+				if (dataIndex >= newsletterDataJson.length) break;
+
+				const addAnItem = (col: number, row: number) => {
+					if (dataIndex < newsletterDataJson.length) {
+						items.push({
+							...newsletterDataJson[dataIndex++],
+							col: col + 1,
+							row: row + 1,
+						});
+					}
+				};
+
+				if (r < 2) {
+					if (columns > 1) {
+						addAnItem(0, r);
+						addAnItem(columns - 1, r);
+					} else {
+						addAnItem(0, r);
+					}
+				} else {
+					// For r>=2, determine how many items fit on each side
+					if (columns === 1) {
+						addAnItem(0, r);
+					} else {
+						const itemsToPlacePerSide = Math.min(
+							r,
+							Math.floor(columns / 2)
+						);
+						for (let i = 0; i < itemsToPlacePerSide; i++) {
+							// Add from left
+							addAnItem(i, r);
+							// Add from right
+							addAnItem(columns - 1 - i, r);
+						}
+					}
+				}
+			}
+			setGridItems(items);
+		};
+
+		calculateGrid();
+
+		const resizeObserver = new ResizeObserver(calculateGrid);
+		if (containerRef.current) {
+			resizeObserver.observe(containerRef.current);
+		}
+
+		return () => {
+			if (containerRef.current) {
+				resizeObserver.unobserve(containerRef.current);
+			}
+		};
+	}, []);
+
 	return (
-		<section className="w-screen h-screen min-h-screen min-w-full flex items-center justify-center bg-gradient-to-br overflow-hidden">
-			{/* Desktop grid layout */}
-			<div
-				className="hidden sm:grid w-full h-full grid-rows-7 grid-cols-11 relative"
-				// style={{ minHeight: "100vh", minWidth: "100vw" }}
-			>
-				{heroGridData.map((item, idx) => (
+		<section
+			ref={containerRef}
+			className="h-screen w-screen overflow-hidden p-4 text-center"
+		>
+			<div style={gridStyles}>
+				{gridItems.map((item) => (
 					<div
-						key={idx}
-						className="absolute border"
+						key={item.id}
 						style={{
-							gridRowStart: item.row + 1,
-							gridColumnStart: item.col + 1,
-							// Optionally, tweak translate for overlap/spacing
+							gridColumnStart: item.col,
+							gridRowStart: item.row,
 						}}
+						className="flex items-center justify-center"
 					>
 						<ImageWithTooltip
 							src={item.src}
-							height={54}
-							width={54}
 							name={item.name}
 							substackUrl={item.substackUrl}
 							skystackUrl={item.skystackUrl}
-							// className=""
+							height={ITEM_HEIGHT}
+							width={ITEM_WIDTH}
 						/>
 					</div>
 				))}
 			</div>
-			{/* Mobile layout: simple vertical stack */}
-			<div className="flex flex-col sm:hidden w-full h-full items-center justify-center gap-4 py-8 overflow-y-auto">
-				{heroGridData.slice(0, 7).map((item, idx) => (
-					<ImageWithTooltip
-						key={idx}
-						src={item.src}
-						height={56}
-						width={56}
-						name={item.name}
-						substackUrl={item.substackUrl}
-						skystackUrl={item.skystackUrl}
-					/>
-				))}
-			</div>
 		</section>
 	);
-};
-
-export default Hero;
+}

@@ -15,6 +15,7 @@ interface ImageWithTooltipProps {
 	name: string;
 	substackUrl: string;
 	skystackUrl: string;
+	className?: string;
 }
 
 export default function ImageWithTooltip({
@@ -24,6 +25,7 @@ export default function ImageWithTooltip({
 	name,
 	substackUrl,
 	skystackUrl,
+	className,
 }: ImageWithTooltipProps) {
 	return (
 		<Tooltip>
@@ -40,8 +42,8 @@ export default function ImageWithTooltip({
 			</TooltipTrigger>
 			<TooltipContent
 				sideOffset={8}
-				className="flex flex-col items-center gap-2 min-w-[200px] bg-black/5 border text-white backdrop-blur"
-				arrowClassName="bg-black/50 fill-black/50 border-r border-b backdrop-blur "
+				className={`flex flex-col items-center gap-2 min-w-[200px] bg-black/20 border text-white backdrop-blur ${className}`}
+				arrowClassName="bg-black/20 fill-black/20 border-r border-b backdrop-blur"
 			>
 				<span className="text-sm font-medium mb-1">{name}</span>
 				<div className="flex gap-2">
