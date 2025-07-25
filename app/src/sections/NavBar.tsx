@@ -36,7 +36,7 @@ function NavLinks({ className = "" }: { className?: string }) {
 function LoginButton({ className = "" }: { className?: string }) {
 	return (
 		<button
-			className={`flex items-center gap-2 bg-white text-slate-900 text-sm font-medium rounded-lg shadow hover:bg-slate-300 transition-colors ${className}`}
+			className={`flex items-center gap-2 bg-white text-slate-900 text-sm font-medium rounded-lg shadow hover:bg-slate-300 transition-colors cursor-pointer ${className}`}
 		>
 			<Image src="/bluesky.svg" alt="Logo" width={16} height={14} />
 			<span>Login with Bluesky</span>
@@ -78,7 +78,7 @@ export default function NavBar() {
 					<button
 						aria-label={menuOpen ? "Close menu" : "Open menu"}
 						onClick={() => setMenuOpen((v) => !v)}
-						className="p-2 rounded focus:outline-none"
+						className="p-2 rounded focus:outline-none cursor-pointer"
 					>
 						{menuOpen ? (
 							<X size={22} className="text-slate-200" />
