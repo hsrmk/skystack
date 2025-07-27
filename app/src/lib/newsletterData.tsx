@@ -71,9 +71,9 @@ export const newsletterDataJson = [
 	},
 	{
 		id: 10,
-		src: "/logos/astralcodexten.png",
-		name: "Astral Codex Ten",
-		substackUrl: "https://www.astralcodexten.com/",
+		src: "/logos/noahpinion.png",
+		name: "Noahpinion",
+		substackUrl: "https://www.noahpinion.blog/",
 		skystackUrl: "",
 	},
 	{
@@ -113,9 +113,9 @@ export const newsletterDataJson = [
 	},
 	{
 		id: 16,
-		src: "/logos/noahpinion.png",
-		name: "Noahpinion",
-		substackUrl: "https://www.noahpinion.blog/",
+		src: "/logos/astralcodexten.png",
+		name: "Astral Codex Ten",
+		substackUrl: "https://www.astralcodexten.com/",
 		skystackUrl: "",
 	},
 	{

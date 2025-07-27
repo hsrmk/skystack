@@ -87,6 +87,33 @@ export default function HeroGrid() {
 					}
 				}
 			}
+
+			// Check if there's space for an additional row and add more items
+			if (dataIndex < newsletterDataJson.length && rows > 0) {
+				const remainingItems = newsletterDataJson.length - dataIndex;
+
+				// Calculate if there's space for an additional row
+				const totalHeightUsed = rows * (ITEM_HEIGHT + GAP) - GAP; // Subtract GAP because there's no gap after the last row
+				const availableSpace = height - totalHeightUsed;
+				const canFitAdditionalRow = availableSpace >= ITEM_HEIGHT / 2;
+
+				if (canFitAdditionalRow && columns > 0) {
+					// Add items to a new row
+					const newRow = rows + 1;
+					const itemsToAdd = Math.min(remainingItems, columns);
+
+					for (let i = 0; i < itemsToAdd; i++) {
+						if (dataIndex < newsletterDataJson.length) {
+							items.push({
+								...newsletterDataJson[dataIndex++],
+								col: i + 1,
+								row: newRow,
+							});
+						}
+					}
+				}
+			}
+
 			setGridItems(items);
 		}
 

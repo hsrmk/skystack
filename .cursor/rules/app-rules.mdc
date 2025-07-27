@@ -4,6 +4,6 @@ alwaysApply: true
 
 I am working on a Next.js React Project deployed on Vercel, with Tailwind CSS for styling and sometimes for specific components I use ui/shadcn.
 
-For colors, always use Tailwind CSS primitive colors, unless specified.
+For colors, always use Tailwind CSS primitive colors, unless specified. Always use "@/" to reference imports.
 
 Before implementing and starting to code, always ask geniuine questions? (Please no made up questions, just for the sake of asking questions, only geniune questions regarding implementations etc.)
