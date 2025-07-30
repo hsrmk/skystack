@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ImageWithTooltip from "@/components/ImageWithTooltip";
-import { newsletterDataJson } from "@/lib/newsletterData";
+import { gridLayoutData } from "@/lib/gridLayoutData";
 
 interface GridItem {
 	id: number;
@@ -26,7 +26,7 @@ export default function HeroGrid() {
 
 	// Mobile grid state
 	const [mobileGrid, setMobileGrid] = useState<
-		((typeof newsletterDataJson)[0] | null)[][]
+		((typeof gridLayoutData)[0] | null)[][]
 	>([]);
 	const [mobileColumns, setMobileColumns] = useState(4);
 
@@ -53,12 +53,12 @@ export default function HeroGrid() {
 			let dataIndex = 0;
 
 			for (let r = 0; r < rows; r++) {
-				if (dataIndex >= newsletterDataJson.length) break;
+				if (dataIndex >= gridLayoutData.length) break;
 
 				const addAnItem = (col: number, row: number) => {
-					if (dataIndex < newsletterDataJson.length) {
+					if (dataIndex < gridLayoutData.length) {
 						items.push({
-							...newsletterDataJson[dataIndex++],
+							...gridLayoutData[dataIndex++],
 							col: col + 1,
 							row: row + 1,
 						});
@@ -89,8 +89,8 @@ export default function HeroGrid() {
 			}
 
 			// Check if there's space for an additional row and add more items
-			if (dataIndex < newsletterDataJson.length && rows > 0) {
-				const remainingItems = newsletterDataJson.length - dataIndex;
+			if (dataIndex < gridLayoutData.length && rows > 0) {
+				const remainingItems = gridLayoutData.length - dataIndex;
 
 				// Calculate if there's space for an additional row
 				const totalHeightUsed = rows * (ITEM_HEIGHT + GAP) - GAP; // Subtract GAP because there's no gap after the last row
@@ -103,9 +103,9 @@ export default function HeroGrid() {
 					const itemsToAdd = Math.min(remainingItems, columns);
 
 					for (let i = 0; i < itemsToAdd; i++) {
-						if (dataIndex < newsletterDataJson.length) {
+						if (dataIndex < gridLayoutData.length) {
 							items.push({
-								...newsletterDataJson[dataIndex++],
+								...gridLayoutData[dataIndex++],
 								col: i + 1,
 								row: newRow,
 							});
@@ -134,21 +134,23 @@ export default function HeroGrid() {
 			);
 			const rows = 4;
 			let dataIndex = 0;
-			const grid: ((typeof newsletterDataJson)[0] | null)[][] =
-				Array.from({ length: rows }, () => Array(columns).fill(null));
+			const grid: ((typeof gridLayoutData)[0] | null)[][] = Array.from(
+				{ length: rows },
+				() => Array(columns).fill(null)
+			);
 
 			// Fill 4th (bottom) and 3rd rows fully
 			for (let r = rows - 1; r >= rows - 2; r--) {
 				for (let c = 0; c < columns; c++) {
-					grid[r][c] = newsletterDataJson[dataIndex++];
+					grid[r][c] = gridLayoutData[dataIndex++];
 				}
 			}
 
 			// 1st and 2nd row: leftmost and rightmost
-			grid[1][0] = newsletterDataJson[dataIndex++];
-			grid[1][columns - 1] = newsletterDataJson[dataIndex++];
-			grid[0][0] = newsletterDataJson[dataIndex++];
-			grid[0][columns - 1] = newsletterDataJson[dataIndex++];
+			grid[1][0] = gridLayoutData[dataIndex++];
+			grid[1][columns - 1] = gridLayoutData[dataIndex++];
+			grid[0][0] = gridLayoutData[dataIndex++];
+			grid[0][columns - 1] = gridLayoutData[dataIndex++];
 
 			setMobileGrid(grid);
 			setMobileColumns(columns);

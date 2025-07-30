@@ -1,4 +1,4 @@
-export const newsletterDataJson = [
+export const gridLayoutData = [
 	{
 		id: 0,
 		src: "/logos/worksinprogress.png",
@@ -8,9 +8,9 @@ export const newsletterDataJson = [
 	},
 	{
 		id: 1,
-		src: "/logos/fabricatedknowledge.png",
-		name: "Fabricated Knowledge",
-		substackUrl: "https://www.fabricatedknowledge.com/",
+		src: "/logos/unchartedterritories.png",
+		name: "Uncharted Territories",
+		substackUrl: "https://unchartedterritories.tomaspueyo.com/",
 		skystackUrl: "",
 	},
 	{
@@ -22,9 +22,9 @@ export const newsletterDataJson = [
 	},
 	{
 		id: 3,
-		src: "/logos/unchartedterritories.png",
-		name: "Uncharted Territories",
-		substackUrl: "https://unchartedterritories.tomaspueyo.com/",
+		src: "/logos/fabricatedknowledge.png",
+		name: "Fabricated Knowledge",
+		substackUrl: "https://www.fabricatedknowledge.com/",
 		skystackUrl: "",
 	},
 	{
