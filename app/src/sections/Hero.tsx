@@ -6,7 +6,20 @@ import Image from "next/image";
 import HeroGrid from "@/components/HeroGrid";
 import CreateField from "@/components/CreateField";
 
-export default function Hero() {
+interface AccountData {
+	profilePicImage: string;
+	name: string;
+	username: string;
+	description: string;
+	substackUrl: string;
+	skystackUrl: string;
+}
+
+interface HeroProps {
+	data: AccountData[];
+}
+
+export default function Hero({ data }: HeroProps) {
 	return (
 		<section className="h-screen w-screen overflow-hidden p-4 text-center relative">
 			{/* Gradient Overlays */}

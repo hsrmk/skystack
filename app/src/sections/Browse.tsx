@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import { ArrowRight, Loader2Icon, Search } from "lucide-react";
 import { AccountCard } from "@/components/AccountCard";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
+import Box from "@/components/Box";
 
 interface BrowseProps {
 	data: {
@@ -11,36 +15,67 @@ interface BrowseProps {
 		substackUrl: string;
 		skystackUrl: string;
 	}[];
-	onLoadMore: () => void;
-	hasMore: boolean;
-	loadingMore: boolean;
+	isLoading: boolean;
 }
 
-export default function Browse({
-	data,
-	onLoadMore,
-	hasMore,
-	loadingMore,
-}: BrowseProps) {
+export default function Browse({ data, isLoading }: BrowseProps) {
+	const [displayedCount, setDisplayedCount] = useState(6);
+	const itemsPerPage = 6;
+
+	const displayedData = data.slice(0, displayedCount);
+	const hasMoreItems = displayedCount < data.length;
+
+	const handleLoadMore = () => {
+		setDisplayedCount((prev) => Math.min(prev + itemsPerPage, data.length));
+	};
+
 	return (
-		<section className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 md:px-12 py-8">
-			{data.map((item) => (
-				<AccountCard key={item.username} {...item} />
-			))}
-			{hasMore && (
-				<div className="col-span-full flex justify-center mt-4">
+		<section className="flex flex-col gap-6 px-4 md:px-12 py-8">
+			<div className="flex flex-col items-center justify-center pt-15 gap-2">
+				<p className="font-bold text-white">Browse Accounts</p>
+				<p className="font-medium text-font-secondary text-center mx-auto">
+					Here you can find popular Substacks already
+					<br />
+					available to follow on Bluesky.
+				</p>
+			</div>
+
+			<div className="flex justify-center w-full">
+				<Box className="text-font-secondary cursor-pointer p-6 lg:py-4 lg:pl-6 lg:pr-20 gap-2 flex flex-row items-center text-sm w-full max-w-lg">
+					<Search size={14} />
+					<p className="font-medium">
+						Search for a Substack Newsletter...
+					</p>
+				</Box>
+			</div>
+
+			{/* Grid of account cards */}
+			<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pt-15">
+				{displayedData.map((item) => (
+					<AccountCard key={item.username} {...item} />
+				))}
+			</div>
+
+			{/* Load More Button */}
+			{hasMoreItems && (
+				<div className="flex justify-center mt-8">
 					<Button
+						onClick={handleLoadMore}
+						disabled={isLoading}
+						variant="secondary"
 						size="sm"
-						onClick={onLoadMore}
-						disabled={loadingMore}
+						className="px-6 bg-black border text-font-secondary"
 					>
-						{loadingMore ? (
+						{isLoading ? (
 							<>
 								<Loader2Icon className="animate-spin" />
 								Loading...
 							</>
 						) : (
-							"Load More"
+							<>
+								See More
+								<ArrowRight size={4} />
+							</>
 						)}
 					</Button>
 				</div>
