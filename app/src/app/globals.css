@@ -125,3 +125,50 @@
     @apply bg-background text-foreground;
     }
 }
+
+/*
+  Define the keyframes for the light-up animation
+  with vendor prefixes for cross-browser compatibility.
+*/
+@-webkit-keyframes light-up {
+  0%, 100% {
+    background-color: var(--color-font-secondary); /* gray-500 */
+    opacity: 0.3;
+  }
+  50% {
+    background-color: var(--color-font-secondary); /* white */
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes light-up {
+  0%, 100% {
+    background-color: var(--color-font-secondary);
+    opacity: 0.3;
+  }
+  50% {
+    background-color: var(--color-font-secondary);
+    opacity: 1;
+  }
+}
+
+@keyframes light-up {
+  0%, 100% {
+    background-color: var(--color-font-secondary);
+    opacity: 0.3;
+  }
+  50% {
+    background-color: var(--color-font-secondary);
+    opacity: 1;
+  }
+}
+
+/*
+  Create a utility class to apply the animation.
+  The animation properties are defined here.
+*/
+.animate-light-up {
+  -webkit-animation: light-up 1.5s ease-in-out infinite;
+  -moz-animation: light-up 1.5s ease-in-out infinite;
+  animation: light-up 1.5s ease-in-out infinite;
+}

@@ -52,7 +52,7 @@ export default function MirrorNewsletterDialog({
 							height={30}
 						/>
 					</Box>
-					<DottedBorder animate />
+					<DottedBorder />
 					<Box className="p-3 w-14 h-14 flex items-center justify-center">
 						<Image
 							src="/bluesky.svg"

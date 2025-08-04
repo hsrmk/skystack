@@ -1,124 +1,71 @@
-import * as React from "react";
+import React from "react";
 
+// Define the types for the component's props
 interface DottedBorderProps {
+	orientation?: "horizontal" | "vertical";
 	width?: number;
 	height?: number;
-	orientation?: "horizontal" | "vertical";
-	animate?: boolean;
-	animationDuration?: number;
-	animationDirection?: "forward" | "reverse";
-	className?: string;
 }
 
 const DottedBorder: React.FC<DottedBorderProps> = ({
-	width = 85,
-	height = 1,
 	orientation = "horizontal",
-	animate = false,
-	animationDuration = 2,
-	animationDirection = "forward",
-	className = "",
+	width = 100,
+	height = 200,
 }) => {
-	const isHorizontal = orientation === "horizontal";
-	const actualWidth = isHorizontal ? width : height;
-	const actualHeight = isHorizontal ? height : width;
+	// --- Constants for a Fixed Appearance ---
+	const DOT_SIZE = 1.5; // Each dot will be 2x2 pixels.
+	const DOT_SPACING = 4; // The space between each dot will be 2px.
+	const WAVE_DURATION = 3.0; // The animation "wave" takes 1 second to cross the line.
 
-	// Generate unique ID for the gradient to avoid conflicts
-	const gradientId = React.useId();
-	const uniqueId = gradientId.replace(/:/g, "");
+	// Determine the primary axis length based on orientation
+	const effectiveLength = orientation === "horizontal" ? width : height;
 
-	// Animation keyframes for gradient transform
-	const animationName = `gradient-move-${uniqueId}`;
+	// --- Dynamic Calculation Logic ---
 
-	React.useEffect(() => {
-		if (!animate) return;
+	// 1. Calculate how many dots (with their spacing) can fit in the given length.
+	const numberOfDots = Math.floor(effectiveLength / (DOT_SIZE + DOT_SPACING));
 
-		// Create and inject CSS animation for gradient transform
-		const style = document.createElement("style");
-		const direction =
-			animationDirection === "reverse" ? "reverse" : "normal";
+	// --- Style Objects ---
+	const containerStyle: React.CSSProperties = {
+		// The container's cross-axis size is determined by the fixed dot size.
+		width: orientation === "horizontal" ? `${width}px` : `${DOT_SIZE}px`,
+		height: orientation === "vertical" ? `${height}px` : `${DOT_SIZE}px`,
+	};
 
-		if (isHorizontal) {
-			style.textContent = `
-				@keyframes ${animationName} {
-					0% { transform: translateX(-100%); }
-					100% { transform: translateX(100%); }
-				}
-				.${animationName} {
-					animation: ${animationName} ${animationDuration}s linear infinite ${direction};
-				}
-			`;
-		} else {
-			style.textContent = `
-				@keyframes ${animationName} {
-					0% { transform: translateY(-100%); }
-					100% { transform: translateY(100%); }
-				}
-				.${animationName} {
-					animation: ${animationName} ${animationDuration}s linear infinite ${direction};
-				}
-			`;
-		}
+	const dotsContainerStyle: React.CSSProperties = {
+		display: "flex",
+		flexDirection: orientation === "horizontal" ? "row" : "column",
+		gap: `${DOT_SPACING}px`, // Use the fixed spacing value
+	};
 
-		document.head.appendChild(style);
-
-		return () => {
-			document.head.removeChild(style);
-		};
-	}, [
-		animate,
-		animationName,
-		animationDuration,
-		animationDirection,
-		isHorizontal,
-	]);
-
-	const pathD = isHorizontal
-		? `M0 ${actualHeight / 2}h${actualWidth}`
-		: `M${actualWidth / 2} 0v${actualHeight}`;
-
-	// Gradient properties - making it about 120% of the total length for spotlight effect
-	const gradientWidth = isHorizontal ? actualWidth * 1.2 : actualHeight * 1.2;
-
-	const gradientProps = isHorizontal
-		? {
-				x1: 0,
-				x2: gradientWidth,
-				y1: actualHeight / 2,
-				y2: actualHeight / 2,
-				gradientUnits: "userSpaceOnUse" as const,
-			}
-		: {
-				x1: actualWidth / 2,
-				x2: actualWidth / 2,
-				y1: 0,
-				y2: gradientWidth,
-				gradientUnits: "userSpaceOnUse" as const,
-			};
+	const dotStyle: React.CSSProperties = {
+		width: `${DOT_SIZE}px`, // Use the fixed dot size
+		height: `${DOT_SIZE}px`,
+	};
 
 	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width={actualWidth}
-			height={actualHeight}
-			fill="none"
-			className={className}
+		<div
+			style={containerStyle}
+			className="flex items-center justify-center"
 		>
-			<path stroke="url(#a)" strokeDasharray="2 2" d={pathD} />
-			<defs>
-				<linearGradient
-					id="a"
-					{...gradientProps}
-					className={animate ? animationName : ""}
-				>
-					<stop stopColor="#fff" stopOpacity={0} />
-					<stop offset={0.2} stopColor="#fff" stopOpacity={0.3} />
-					<stop offset={0.5} stopColor="#fff" stopOpacity={0.6} />
-					<stop offset={0.8} stopColor="#fff" stopOpacity={0.3} />
-					<stop offset={1} stopColor="#fff" stopOpacity={0} />
-				</linearGradient>
-			</defs>
-		</svg>
+			<div style={dotsContainerStyle}>
+				{Array.from({ length: numberOfDots }).map((_, index) => {
+					// 2. Calculate a normalized animation delay for a consistent wave speed.
+					const delay = (index / numberOfDots) * WAVE_DURATION;
+
+					return (
+						<div
+							key={index}
+							className="bg-gray-500 animate-light-up"
+							style={{
+								...dotStyle, // Apply the fixed dot size
+								animationDelay: `${delay}s`, // Apply the normalized delay
+							}}
+						></div>
+					);
+				})}
+			</div>
+		</div>
 	);
 };
 
