@@ -21,7 +21,7 @@ def create_newsletter_route():
                 yield json.dumps({"type": "error", "message": "Missing 'url' in request body"}) + '\n'
                 return
             url = data['url']
-            yield json.dumps({"message": "Creating account...", "type": "init"}) + '\n'
+            yield json.dumps({"type": "processing", "message": "Creating account..."}) + '\n'
 
             # 2. getNewsletterAdmin
             user = User(url)
@@ -29,7 +29,7 @@ def create_newsletter_route():
             if not admin:
                 yield json.dumps({"type": "error", "message": "Could not fetch newsletter admin"}) + '\n'
                 return
-            yield json.dumps({"type": "admin_fetched", **admin}) + '\n'
+            # yield json.dumps({"type": "admin_fetched", **admin}) + '\n'
             
             # 3. getPublication
             newsletter = Newsletter(url)

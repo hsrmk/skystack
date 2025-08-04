@@ -16,9 +16,14 @@ interface BrowseProps {
 		skystackUrl: string;
 	}[];
 	isLoading: boolean;
+	onCommandOpenChange: (open: boolean) => void;
 }
 
-export default function Browse({ data, isLoading }: BrowseProps) {
+export default function Browse({
+	data,
+	isLoading,
+	onCommandOpenChange,
+}: BrowseProps) {
 	const [displayedCount, setDisplayedCount] = useState(6);
 	const itemsPerPage = 6;
 
@@ -41,11 +46,19 @@ export default function Browse({ data, isLoading }: BrowseProps) {
 			</div>
 
 			<div className="flex justify-center w-full">
-				<Box className="text-font-secondary cursor-pointer p-6 lg:py-4 lg:pl-6 lg:pr-20 gap-2 flex flex-row items-center text-sm w-full max-w-lg">
-					<Search size={14} />
-					<p className="font-medium">
-						Search for a Substack Newsletter...
-					</p>
+				<Box
+					onClick={() => onCommandOpenChange(true)}
+					className="text-font-secondary cursor-pointer p-6 lg:py-4 lg:pl-6 gap-2 flex flex-row items-center text-sm w-full max-w-lg justify-between"
+				>
+					<div className="flex flex-row items-center gap-2">
+						<Search size={14} />
+						<p className="font-medium">
+							Search for a Substack Newsletter...
+						</p>
+					</div>
+					<div className="px-2 py-1 rounded-sm bg-black border invisible lg:visible">
+						⌘K
+					</div>
 				</Box>
 			</div>
 

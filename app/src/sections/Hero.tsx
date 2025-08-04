@@ -6,20 +6,11 @@ import Image from "next/image";
 import HeroGrid from "@/components/HeroGrid";
 import CreateField from "@/components/CreateField";
 
-interface AccountData {
-	profilePicImage: string;
-	name: string;
-	username: string;
-	description: string;
-	substackUrl: string;
-	skystackUrl: string;
-}
-
 interface HeroProps {
-	data: AccountData[];
+	onCommandOpenChange: (open: boolean) => void;
 }
 
-export default function Hero({ data }: HeroProps) {
+export default function Hero({ onCommandOpenChange }: HeroProps) {
 	return (
 		<section className="h-screen w-screen overflow-hidden p-4 text-center relative">
 			{/* Gradient Overlays */}
@@ -47,7 +38,7 @@ export default function Hero({ data }: HeroProps) {
 					</div>
 				</div>
 
-				<CreateField />
+				<CreateField onClick={() => onCommandOpenChange(true)} />
 			</div>
 		</section>
 	);

@@ -79,8 +79,12 @@ export default function Home() {
 				onOpenChange={setSearchOpen}
 				accounts={mergedData}
 			/>
-			<Hero data={mergedData} />
-			<Browse data={mergedData} isLoading={isLoading} />
+			<Hero onCommandOpenChange={setSearchOpen} />
+			<Browse
+				data={mergedData}
+				isLoading={isLoading}
+				onCommandOpenChange={setSearchOpen}
+			/>
 		</>
 	);
 }
