@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { UserRoundPlus } from "lucide-react";
-import MirrorNewsletterDialog from "@/components/MirrorNewsletterDialog";
+import MirrorNewsletterDialog from "@/sections/MirrorNewsletterDialog";
 
 interface AccountData {
 	profilePicImage: string;

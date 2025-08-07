@@ -9,13 +9,13 @@ interface DottedBorderProps {
 
 const DottedBorder: React.FC<DottedBorderProps> = ({
 	orientation = "horizontal",
-	width = 100,
+	width = 50,
 	height = 200,
 }) => {
 	// --- Constants for a Fixed Appearance ---
-	const DOT_SIZE = 1.5; // Each dot will be 2x2 pixels.
-	const DOT_SPACING = 4; // The space between each dot will be 2px.
-	const WAVE_DURATION = 3.0; // The animation "wave" takes 1 second to cross the line.
+	const DOT_SIZE = 1.5; // Each dot will be 1.5x1,5 pixels.
+	const DOT_SPACING = 2; // The space between each dot will be 2px.
+	const WAVE_DURATION = 2.0; // The animation "wave" takes 2 second to cross the line.
 
 	// Determine the primary axis length based on orientation
 	const effectiveLength = orientation === "horizontal" ? width : height;

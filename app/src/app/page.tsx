@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import Hero from "@/sections/Hero";
 import Browse from "@/sections/Browse";
 import { browseSectionPartialData } from "@/lib/browseSectionPartialData";
-import SearchCommand from "@/components/SearchCommand";
+import SearchCommand from "@/sections/SearchCommand";
+import WhatIsThis from "@/sections/WhatIsThis";
 
 interface AccountData {
 	profilePicImage: string;
@@ -85,6 +86,7 @@ export default function Home() {
 				isLoading={isLoading}
 				onCommandOpenChange={setSearchOpen}
 			/>
+			<WhatIsThis />
 		</>
 	);
 }

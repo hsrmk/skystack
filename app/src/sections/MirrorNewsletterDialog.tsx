@@ -12,6 +12,8 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 
 import Box from "@/components/Box";
 import DottedBorder from "@/components/DottedBorder";
+// import PulseDot from "@/components/PulseDot";
+import ProcessingSubstack from "@/sections/ProcessingSubstack";
 
 interface MirrorNewsletterDialogProps {
 	open: boolean;
@@ -25,7 +27,7 @@ export default function MirrorNewsletterDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent
-				className="sm:max-w-md"
+				className="sm:max-w-lg"
 				onPointerDownOutside={(e) => {
 					e.preventDefault();
 				}}
@@ -38,12 +40,12 @@ export default function MirrorNewsletterDialog({
 						Mirror Newsletter to Bluesky
 					</DialogTitle>
 					<DialogDescription className="text-sm text-font-secondary">
-						Processing the Substack and importing posts and social
+						Processing the Substack. Importing posts and social
 						graph to Bluesky.
 					</DialogDescription>
 				</DialogHeader>
 				{/* Content will be added here */}
-				<div className="flex items-center justify-center gap-2">
+				<div className="flex items-center justify-center gap-2 pt-2 pb-4">
 					<Box className="p-3 w-14 h-14 flex items-center justify-center">
 						<Image
 							src="/substack.svg"
@@ -62,6 +64,8 @@ export default function MirrorNewsletterDialog({
 						/>
 					</Box>
 				</div>
+				{/* <PulseDot state="error" size="sm" /> */}
+				<ProcessingSubstack />
 			</DialogContent>
 		</Dialog>
 	);
