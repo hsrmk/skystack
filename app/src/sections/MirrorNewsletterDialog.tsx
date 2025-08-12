@@ -16,11 +16,13 @@ import DottedBorder from "@/components/DottedBorder";
 import ProcessingSubstack from "@/sections/ProcessingSubstack";
 
 interface MirrorNewsletterDialogProps {
+	url: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }
 
 export default function MirrorNewsletterDialog({
+	url,
 	open,
 	onOpenChange,
 }: MirrorNewsletterDialogProps) {
@@ -40,8 +42,15 @@ export default function MirrorNewsletterDialog({
 						Mirror Newsletter to Bluesky
 					</DialogTitle>
 					<DialogDescription className="text-sm text-font-secondary">
-						Processing the Substack. Importing posts and social
-						graph to Bluesky.
+						Importing posts and social graph to Bluesky for{" "}
+						<a
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="hover:text-white underline"
+						>
+							{url}
+						</a>
 					</DialogDescription>
 				</DialogHeader>
 				{/* Content will be added here */}

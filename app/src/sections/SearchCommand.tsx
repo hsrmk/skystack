@@ -147,6 +147,7 @@ export default function SearchCommand({
 			</CommandDialog>
 
 			<MirrorNewsletterDialog
+				url={search}
 				open={mirrorDialogOpen}
 				onOpenChange={setMirrorDialogOpen}
 			/>

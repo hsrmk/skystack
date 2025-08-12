@@ -109,7 +109,7 @@ export default function ProcessingSubstack() {
 		>
 			{events.length === 0 && (
 				<div className="text-center text-gray-500 py-8">
-					Starting Processing...
+					Connecting to Skystack...
 				</div>
 			)}
 			<ul className="flex flex-col relative">
