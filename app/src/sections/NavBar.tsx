@@ -10,19 +10,19 @@ function NavLinks({ className = "" }: { className?: string }) {
 			className={`flex flex-col lg:flex-row gap-2 lg:gap-8 text-sm ${className}`}
 		>
 			<a
-				href="#"
+				href="#browse"
 				className="text-font-secondary hover:text-font-primary font-medium px-2 py-2 rounded transition-colors"
 			>
 				Browse Accounts
 			</a>
 			<a
-				href="#"
+				href="#whatisthis"
 				className="text-font-secondary hover:text-font-primary font-medium px-2 py-2 rounded transition-colors"
 			>
 				What is this?
 			</a>
 			<a
-				href="#"
+				href="https://github.com/hsrmk/skystack"
 				target="_blank"
 				rel="noopener noreferrer"
 				className="flex items-center text-font-secondary hover:text-font-primary font-medium px-2 py-2 rounded transition-colors"

@@ -137,7 +137,7 @@ export default function SearchCommand({
 									<div className="flex items-center gap-2 cursor-pointer">
 										<span> </span>
 										<UserRoundPlus />
-										<span>Bridge Substack to Bluesky</span>
+										<span>Start processing Substack</span>
 									</div>
 								</CommandItem>
 							</CommandGroup>
