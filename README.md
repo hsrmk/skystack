@@ -19,21 +19,21 @@ Follow Substack newsletters on Bluesky. This repo contains:
 
 ### Checklist
 
-1. [-] Connect to PDS and implement `createAccount`, `post`, `followUser`, `updateProfile`.
-2. [-] Implement Substack Integration
-3. [-] Implement RSS Check Cron Jobs, Background post imports
-4. [-] Create Skystack Web App
-5. [ ] List all mirrored accounts from firestore as static json for search (Currently using mock data)
-6. [ ] Connect `createNewsletter` to UI
-7. [ ] Import Newsletter Social Graphs, create Cloud Task endpoint for background import
+[-] Connect to PDS and implement `createAccount`, `post`, `followUser`, `updateProfile`.
+[-] Implement Substack Integration
+[-] Implement RSS Check Cron Jobs, Background post imports
+[-] Create Skystack Web App
+[ ] List all mirrored accounts from firestore as static json for search (Currently using mock data)
+[ ] Connect `createNewsletter` to UI
+[ ] Import Newsletter Social Graphs, create Cloud Task endpoint for background import
 
 ### Future
 
-1. [ ] Login with Bluesky
-2. [ ] Implement PDS on GCP Cloud Run using snarfed/arroba instead of VM-based implementation of atproto/pds
-3. [ ] Increase posts mirrored limit from 50 to unlimited
-4. [ ] Implement Substack Notes support as well
-5. [ ] Expand horizon beyond Substack to all blogs? (Not just what's present in RSS Feed, even older posts)
+[ ] Login with Bluesky
+[ ] Implement PDS on GCP Cloud Run using snarfed/arroba instead of VM-based implementation of atproto/pds
+[ ] Increase posts mirrored limit from 50 to unlimited
+[ ] Implement Substack Notes support as well
+[ ] Expand horizon beyond Substack to all blogs? (Not just what's present in RSS Feed, even older posts)
 
 ### Quick start
 
