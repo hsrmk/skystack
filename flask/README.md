@@ -29,32 +29,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Environment variables (placeholders)
-export PDS_ENDPOINT="https://skystack.xyz"                         # Already defaulted in code
-export PDS_USERNAME_EXTENSION=".skystack.xyz"                      # Already defaulted in code
-export ADMIN_PASS="<admin-basic-auth-password>"                    # Required for admin calls
-export USER_LOGIN_PASS="<user-password-suffix>"                    # Appends to username for user password
-
-# Firebase service account
-export FIREBASE_TYPE="service_account"
-export FIREBASE_PROJECT_ID="<gcp-project-id>"
-export FIREBASE_PRIVATE_KEY_ID="<private-key-id>"
-export FIREBASE_PRIVATE_KEY="<-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY----->"
-export FIREBASE_CLIENT_EMAIL="<svc-account>@<project>.iam.gserviceaccount.com"
-export FIREBASE_CLIENT_ID="<client-id>"
-export FIREBASE_AUTH_URI="https://accounts.google.com/o/oauth2/auth"
-export FIREBASE_TOKEN_URI="https://oauth2.googleapis.com/token"
-export FIREBASE_AUTH_PROVIDER_X509_CERT_URL="https://www.googleapis.com/oauth2/v1/certs"
-export FIREBASE_CLIENT_X509_CERT_URL="<client-cert-url>"
-export FIREBASE_UNIVERSE_DOMAIN="googleapis.com"
-
-# Optional for Cloud Tasks integration (local runs may skip tasks)
-export GOOGLE_CLOUD_PROJECT="<gcp-project-id>"
-export CLOUD_TASKS_LOCATION="us-central1"
-export CLOUD_TASKS_QUEUE="default"
-
-# Endpoint of this service when deployed to Cloud Run
-export CLOUD_RUN_ENDPOINT="<https://your-cloud-run-url>"
+# Make sure env variables are already set
 
 # Run locally
 python app.py  # listens on PORT (default 8080)

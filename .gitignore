@@ -172,6 +172,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-serious-sublime-456107-p3-firebase-adminsdk-fbsvc-bbd40e99e7.json
+.cursorignore
+.gitignore
+
+firebase.json
 
 flask/utils/extras

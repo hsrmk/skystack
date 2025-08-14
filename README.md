@@ -1,9 +1,14 @@
 ## SkyStack
 
+> [!WARNING]
+> Still work in progress. Not ready for use.
+
 Follow Substack newsletters on Bluesky. This repo contains:
 
 -   `app/` — Next.js (App Router) frontend deployed on Vercel
 -   `flask/` — Flask backend service designed for Google Cloud Run
+
+![UI](ui.png)
 
 ### Overview
 
@@ -12,13 +17,23 @@ Follow Substack newsletters on Bluesky. This repo contains:
     -   The Flask service exposes endpoints to create the Bluesky account, import posts, and periodically build updates. It stores metadata in Firebase/Firestore and uses Cloud Tasks for async work.
     -   The Next.js app provides the UI: a hero grid, browse/search, and a dialog that shows the progress of “mirroring” a newsletter.
 
-### What's Next
+### Checklist
 
-1. [ ] Import Newsletter Social Graphs
+1. [-] Connect to PDS and implement `createAccount`, `post`, `followUser`, `updateProfile`.
+2. [-] Implement Substack Integration
+3. [-] Implement RSS Check Cron Jobs, Background post imports
+4. [-] Create Skystack Web App
+5. [ ] List all mirrored accounts from firestore as static json for search (Currently using mock data)
+6. [ ] Connect `createNewsletter` to UI
+7. [ ] Import Newsletter Social Graphs, create Cloud Task endpoint for background import
+
+### Future
+
+1. [ ] Login with Bluesky
 2. [ ] Implement PDS on GCP Cloud Run using snarfed/arroba instead of VM-based implementation of atproto/pds
 3. [ ] Increase posts mirrored limit from 50 to unlimited
 4. [ ] Implement Substack Notes support as well
-5. [ ] Expand horizon beyond Substack to all blogs?
+5. [ ] Expand horizon beyond Substack to all blogs? (Not just what's present in RSS Feed, even older posts)
 
 ### Quick start
 
@@ -30,12 +45,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Set env (placeholders below – see flask/README.md for full list)
-export ADMIN_PASS="<admin-basic-auth-password>"
-export USER_LOGIN_PASS="<user-password-suffix>"
-export FIREBASE_PROJECT_ID="<gcp-project-id>"
-export FIREBASE_PRIVATE_KEY="<multiline-private-key>"
-# ... more FIREBASE_* variables ...
+# Copy `.env.example` to `.env`:
+cp .env.example .env
 
 # Run locally (port 8080)
 python app.py
