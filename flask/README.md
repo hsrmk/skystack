@@ -95,7 +95,7 @@ Use that URL as `CLOUD_RUN_ENDPOINT` (and consider storing it also as a Secret/C
 ```bash
 curl -N -X POST "$CLOUD_RUN_ENDPOINT/createNewsletter" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://hasir.substack.com/"}'
+  -d '{"url": "https://my.substack.com/"}'
 ```
 
 ### Architecture notes

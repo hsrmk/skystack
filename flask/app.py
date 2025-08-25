@@ -4,6 +4,8 @@ from endpoints.add_newsletter_user_graph import add_newsletter_user_graph_route
 from endpoints.create_newsletter import create_newsletter_route
 from endpoints.build_newsletter import build_newsletter_route
 from endpoints.newsletter_build_check import newsletter_build_check_route
+from endpoints.create_dormant_newsletter import create_dormant_newsletter_route
+from endpoints.follow_users import follow_users_route
 
 app = Flask(__name__)
 
@@ -26,6 +28,14 @@ def build_newsletter_route_wrapper():
 @app.route('/newsletterBuildCheck', methods=['POST'])
 def newsletter_build_check_route_wrapper():
     return newsletter_build_check_route()
+
+@app.route('/createDormantNewsletter', methods=['POST'])
+def create_dormant_newsletter_route_wrapper():
+    return create_dormant_newsletter_route()
+
+@app.route('/followUsers', methods=['POST'])
+def follow_users_route_wrapper():
+    return follow_users_route()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))

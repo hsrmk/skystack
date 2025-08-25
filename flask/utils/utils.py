@@ -1,9 +1,14 @@
+import os
 import requests
 import feedparser
 import html
 from datetime import datetime, timezone
 
 from utils.endpoints import RSS_ENDPOINT, SUBSTACK_CDN
+
+def is_localhost():
+    ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
+    return ENVIRONMENT == 'local'
 
 def fetch_json(url):
     """

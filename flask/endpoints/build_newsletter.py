@@ -15,6 +15,7 @@ def build_newsletter_route():
         "subdomain": "string"
     }
     """
+    firebase = FirebaseClient()
     try:
         data = request.get_json()
         
@@ -61,7 +62,6 @@ def build_newsletter_route():
                 print(f"Skipping post {post_item.get('link', 'unknown')} due to error: {e}")
         
         # Update last build details in Firebase
-        firebase = FirebaseClient()
         firebase.updateLastBuildDetails(
             subdomain=subdomain,
             lastBuildDate=newsletter_data['last_build_date'],
@@ -75,4 +75,6 @@ def build_newsletter_route():
         }, 200
         
     except Exception as e:
+        payload =  json.dumps(request.get_json())
+        firebase.log_failed_task(payload, "/buildNewsletter", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500 

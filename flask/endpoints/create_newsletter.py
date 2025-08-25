@@ -13,6 +13,7 @@ def create_newsletter_route():
     Handles the creation of a newsletter and bridges it to Bluesky, streaming progress events.
     Expects JSON payload: { "url": "string" }
     """
+    firebase = FirebaseClient()
     def event_stream():
         subdomain = None
         try:
@@ -40,7 +41,6 @@ def create_newsletter_route():
             yield json.dumps({"type": "publication_fetched", **publication}) + '\n'
             
             # 4. create_account
-            firebase = FirebaseClient()
             subdomain = publication['subdomain']
             
             if firebase.checkIfNewsletterExists(subdomain):
@@ -76,7 +76,7 @@ def create_newsletter_route():
             yield json.dumps({"type": "creating_posts", "message": "Importing posts..."}) + '\n'
 
             # 7. getPosts
-            posts_info = newsletter.getPosts(limit=20)
+            posts_info = newsletter.getPosts(limit=10)
             posts = posts_info.get('postsArray', [])
             posts_added = 0
             for post in posts:
@@ -106,7 +106,7 @@ def create_newsletter_route():
             firebase.createNewsletter(
                 publication['publication_id'],
                 publication['name'],
-                publication['subdomain'],
+                subdomain,
                 publication['custom_domain'],
                 publication['hero_text'],
                 publication['logo_url'],
@@ -118,21 +118,29 @@ def create_newsletter_route():
             # 11. create_cloud_task for /addNewsletterUserGraph
             cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
             if not cloud_run_endpoint:
-                yield json.dumps({"type": "partial_error", "message": "Account created and posts imported, but complete bridging."}) + '\n'
+                yield json.dumps({"type": "partial_error", "message": "Account created and posts imported, but couldn't complete mirroring."}) + '\n'
                 return
             
             endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
             task_payload = {
-                "subdomain": publication['subdomain'],
-                "publication_id": publication['publication_id']
+                "subdomain": subdomain,
+                "publication_id": publication['publication_id'],
+                "is_dormant": False
             }
-            create_cloud_task(endpoint, task_payload)
+            create_cloud_task(
+                endpoint, 
+                task_payload,
+                f"Add Newsletter User Graph for {subdomain}"
+            )
 
             # 12. completed
             yield json.dumps({"type": "completed", "message": "Substack account bridged!"}) + '\n'
         except Exception as e:
             if subdomain:
                 delete_account(subdomain)
+            
+            payload =  json.dumps(request.get_json())
+            firebase.log_failed_task(payload, "/createNewsletter", str(e))
             yield json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"}) + '\n'
 
     return Response(stream_with_context(event_stream()), mimetype='application/json')

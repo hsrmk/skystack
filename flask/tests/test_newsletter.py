@@ -13,7 +13,7 @@ def test_get_publication():
         'subdomain': "hasir",
         'custom_domain': None,
         'hero_text': "Writing, tech, philosophy and more tech",
-        'logo_url': None
+        'logo_url': 'https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/5bc729a5-7f8a-47cc-9339-6bb4df48a710_4000x2108.jpeg'
     }
 
 def test_get_recommended_publications():

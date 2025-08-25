@@ -33,7 +33,7 @@ class FirebaseClient:
         doc_ref = self.db.collection(collection_name).document(document_id)
         doc_ref.set(data)
 
-    def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded):
+    def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded, isDormant = False):
         """
         Creates or updates a newsletter document in the 'newsletters' collection.
         :param publication_id: str
@@ -57,7 +57,8 @@ class FirebaseClient:
             "lastBuildDate": lastBuildDate,
             "postFrequency": postFrequency,
             "numberOfPostsAdded": numberOfPostsAdded,
-            "skipPostFrequencyCheck": False
+            "skipPostFrequencyCheck": False,
+            "isDormant": isDormant
         }
         self.add_to_collection("newsletters", sub_domain, data)
 
@@ -148,3 +149,33 @@ class FirebaseClient:
         doc_ref = self.db.collection("newsletters").document(subdomain)
         doc = doc_ref.get()
         return doc.exists
+    
+    def log_failed_task(self, payload: str, endpoint: str, error: str):
+        """
+        Logs a failed task to the 'failed_tasks' collection in Firestore.
+        Each entry uses a timestamp as the document ID.
+
+        :param payload: str - The payload that was attempted to be sent
+        :param endpoint: str - The endpoint the task was targeting
+        :param error: str - The error message encountered
+        """
+        # Hardcoded map of endpoint to priority number, 1 being highest
+        endpoint_priority_map = {
+            "/addNewsletterUserGraph": 5,
+            "/createNewsletter": 1,
+            "/buildNewsletter": 2,
+            "/newsletterBuildCheck": 3,
+            "/createDormantNewsletter": 4,
+            "/followUsers": 6
+        }
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        priority = endpoint_priority_map.get(endpoint, "normal")
+
+        data = {
+            "payload": payload,
+            "endpoint": endpoint,
+            "error": error,
+            "priority": priority,
+            "created_at": timestamp
+        }
+        self.add_to_collection("endpoint_failures", timestamp, data)

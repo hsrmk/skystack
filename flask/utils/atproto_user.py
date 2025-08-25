@@ -151,5 +151,5 @@ class AtprotoUser:
                     img = img.resize((new_width, new_height), Image.LANCZOS)
             image_data = buffer.getvalue()
 
-        blob_response = self.client.com.atproto.repo.upload_blob(image_data)
+        blob_response = self.client.com.atproto.repo.upload_blob(image_data, input_encoding="url/" + image_url)
         return blob_response

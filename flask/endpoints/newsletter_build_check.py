@@ -9,10 +9,9 @@ def newsletter_build_check_route():
     Checks for newsletters that need to be built and creates cloud tasks for each one.
     Expects JSON payload: {} (no parameters required)
     """
+    # Initialize Firebase client
+    firebase = FirebaseClient()
     try:
-        # Initialize Firebase client
-        firebase = FirebaseClient()
-        
         # Get newsletters that need to be built
         newsletters_to_build = firebase.getNewslettersToBeBuilt()
         
@@ -76,4 +75,6 @@ def newsletter_build_check_route():
         }, 200
         
     except Exception as e:
+        payload =  json.dumps(request.get_json())
+        firebase.log_failed_task(payload, "/newsletterBuildCheck", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500 
