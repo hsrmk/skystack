@@ -1,7 +1,6 @@
 from flask import request, Response, stream_with_context
 import json
 import os
-from flask.endpoints import add_older_posts
 from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account, delete_account
