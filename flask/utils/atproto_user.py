@@ -1,4 +1,6 @@
 from atproto import Client, models
+from atproto_client.models.utils import get_response_model
+
 import os
 import requests
 from io import BytesIO
@@ -57,7 +59,7 @@ class AtprotoUser:
         )
         return profile_response
 
-    def createEmbededLinkPost(self, title, subtitle, link, thumbnail_url, post_date):
+    def createEmbededLinkPost(self, title, subtitle, link, thumbnail_url, post_date, labels):
         """
         Creates a new post with a link card embed.
 
@@ -81,12 +83,20 @@ class AtprotoUser:
             )
         )
 
+        # 'labels': ['reaction_count:149', 'comment_count:109', 'child_comment_count:33']
+        # https://deepwiki.com/search/i-am-creating-a-embed-post-lik_58bdf979-e9bd-4898-bb81-a3c788c42510
+        self_labels = None  
+        if labels:  
+            label_values = [models.ComAtprotoLabelDefs.SelfLabel(val=label) for label in labels]  
+            self_labels = models.ComAtprotoLabelDefs.SelfLabels(values=label_values)
+
         # Create post record with custom date  
         post_record = models.AppBskyFeedPost.Record(  
-            text=title + ' • ' + subtitle,  
+            text=title if not subtitle else title + ' • ' + subtitle,
             created_at=post_date,  # ISO format with Z suffix  
-            embed=external_embed
-        )  
+            embed=external_embed,
+            labels=self_labels
+        )
         
         # Create the post using the record namespace 
         post_response = self.client.app.bsky.feed.post.create(  
@@ -106,8 +116,11 @@ class AtprotoUser:
         Returns:
             The response from the server after following the user.
         """
-        follow_response = self.client.follow(follow_user)
-        return follow_response
+        try:
+            follow_response = self.client.follow(follow_user)
+            return follow_response
+        except Exception as e:
+            print(f"Error following user {follow_user}: {e}")
 
     def uploadBlob(self, image_url):
         """
@@ -151,5 +164,5 @@ class AtprotoUser:
                     img = img.resize((new_width, new_height), Image.LANCZOS)
             image_data = buffer.getvalue()
 
-        blob_response = self.client.com.atproto.repo.upload_blob(image_data, input_encoding="url/" + image_url)
+        blob_response = self.client.com.atproto.repo.upload_blob(image_data, headers={"Content-Type": "url/" + image_url})
         return blob_response

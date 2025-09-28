@@ -32,7 +32,8 @@ def test_admin_and_atproto_user():
         subtitle="Test Subtitle",
         link="https://example.com",
         thumbnail_url="https://placehold.co/200x200.png",
-        post_date="2024-06-01T12:00:00Z"
+        post_date="2024-06-01T12:00:00Z",
+        labels=['reaction_count:149', 'comment_count:109', 'child_comment_count:33']
     )
     assert post_response is not None, "createEmbededLinkPost should return a response."
 

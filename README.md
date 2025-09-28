@@ -42,11 +42,15 @@ Follow Substack newsletters on Bluesky. This repo contains:
 ```bash
 cd flask
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate (Or however you like you env setup)
 pip install -r requirements.txt
 
 # Copy `.env.example` to `.env`:
 cp .env.example .env
+
+set -a
+source ../.env
+set +a
 
 # Run locally (port 8080)
 python app.py

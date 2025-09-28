@@ -33,15 +33,19 @@ def create_account(username: str):
 
 def delete_account(username: str):
     client = Client(PDS_ENDPOINT)
-    
-    # Resolve handle to DID
-    user_data = client.resolve_handle(username + PDS_USERNAME_EXTENSION)  
-    delete_account_data = models.ComAtprotoAdminDeleteAccount.Data(did=user_data.did)
+    try:
+        # Resolve handle to DID
+        user_data = client.resolve_handle(username + PDS_USERNAME_EXTENSION)
+        delete_account_data = models.ComAtprotoAdminDeleteAccount.Data(did=user_data.did)
 
-    # Delete account as administrator
-    headers = get_admin_headers()
-    response = client.com.atproto.admin.delete_account(delete_account_data, headers=headers)
-    return response       
+        # Delete account as administrator
+        headers = get_admin_headers()
+        response = client.com.atproto.admin.delete_account(delete_account_data, headers=headers)
+        return response
+    except Exception as e:
+        # You may want to log the error or handle it differently depending on your needs
+        print(f"Error deleting account for username '{username}': {e}")
+        return None
 
 def get_admin_headers():
     # Get admin credentials from environment variables

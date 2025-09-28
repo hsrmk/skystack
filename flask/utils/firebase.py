@@ -93,6 +93,33 @@ class FirebaseClient:
         }
         doc_ref.update(update_data)
 
+    def updateNumPosts(self, subdomain, numberOfPostsAddedNow):
+        """
+        Updates numberOfPostsAdded by adding numberOfPostsAddedNow to the existing count for a newsletter by subdomain.
+        :param subdomain: str
+        :param numberOfPostsAddedNow: int - number of posts to add to the existing count
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc = doc_ref.get()
+        
+        if doc.exists:
+            current_data = doc.to_dict()
+            current_posts = current_data.get("numberOfPostsAdded", 0)
+            
+            # Ensure both values are integers for proper addition
+            try:
+                current_posts = int(current_posts) if current_posts is not None else 0
+                new_posts = int(numberOfPostsAddedNow)
+                updated_posts = current_posts + new_posts
+            except (ValueError, TypeError):
+                # If conversion fails, treat as 0
+                updated_posts = 0 + int(numberOfPostsAddedNow) if numberOfPostsAddedNow is not None else 0
+            
+            doc_ref.update({"numberOfPostsAdded": updated_posts})
+        else:
+            # If document doesn't exist, create it with the new post count
+            doc_ref.set({"numberOfPostsAdded": numberOfPostsAddedNow})
+
     def getNewslettersToBeBuilt(self):
         """
         Returns a list of newsletters that are due to be built (lastBuildDate + postFrequency < current time).
@@ -150,6 +177,14 @@ class FirebaseClient:
         doc = doc_ref.get()
         return doc.exists
     
+    def deleteNewsletter(self, subdomain):
+        """
+        Deletes a newsletter document from the 'newsletters' collection by subdomain.
+        :param subdomain: str
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc_ref.delete()
+    
     def log_failed_task(self, payload: str, endpoint: str, error: str):
         """
         Logs a failed task to the 'failed_tasks' collection in Firestore.
@@ -161,12 +196,13 @@ class FirebaseClient:
         """
         # Hardcoded map of endpoint to priority number, 1 being highest
         endpoint_priority_map = {
-            "/addNewsletterUserGraph": 5,
             "/createNewsletter": 1,
             "/buildNewsletter": 2,
             "/newsletterBuildCheck": 3,
             "/createDormantNewsletter": 4,
-            "/followUsers": 6
+            "/addNewsletterUserGraph": 5,
+            "/followUsers": 6,
+            "/addOlderPosts": 7
         }
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         priority = endpoint_priority_map.get(endpoint, "normal")

@@ -4,7 +4,7 @@ import feedparser
 import html
 from datetime import datetime, timezone
 
-from utils.endpoints import RSS_ENDPOINT, SUBSTACK_CDN
+from utils.endpoints import RSS_ENDPOINT, SUBSTACK_CDN, OG_CARD_ENDPOINT
 
 def is_localhost():
     ENVIRONMENT = os.environ.get('ENVIRONMENT', 'local')
@@ -58,7 +58,7 @@ def getLatestRSSItems(url, lastBuildDate):
                 if hasattr(entry, 'links') and entry.links:
                     for link in entry.links:
                         if link.get('rel') == 'enclosure' and link.get('type', '').startswith('image/'):
-                            thumbnail_url = normalize_substack_image_url(link['href'])
+                            thumbnail_url = normalize_substack_image_url(link['href'], url, isPost=True)
                             break
                         
                 item["thumbnail_url"] = thumbnail_url
@@ -128,12 +128,14 @@ def getPostFreqDetails(numberOfPosts, postFrequency, lastBuildDate, post_dates_l
         'postFrequency': new_postFrequency
     }
 
-def normalize_substack_image_url(image_url):
+def normalize_substack_image_url(image_url, url, isPost=False):
     """
     If the image_url is already from substackcdn.com, return as is.
     Otherwise, wrap it with the substackcdn.com image fetch URL.
     """
-    if image_url is None:
+    if image_url is None and isPost:
+        return url + OG_CARD_ENDPOINT
+    elif image_url is None:
         return None
     # Accept both https://substackcdn.com and https://www.substackcdn.com
     if image_url.startswith("https://substackcdn.com/") or image_url.startswith("https://www.substackcdn.com/"):

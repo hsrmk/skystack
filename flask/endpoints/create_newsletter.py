@@ -1,6 +1,7 @@
 from flask import request, Response, stream_with_context
 import json
 import os
+from flask.endpoints import add_older_posts
 from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account, delete_account
@@ -54,6 +55,8 @@ def create_newsletter_route():
                 }) + '\n'
                 return
             
+            yield json.dumps({"type": "duplicate_newsletter_check"}) + '\n'
+
             account_response = create_account(subdomain)
             if not account_response:
                 yield json.dumps({"type": "error", "message": "Account creation failed"}) + '\n'
@@ -79,6 +82,7 @@ def create_newsletter_route():
             posts_info = newsletter.getPosts(limit=10)
             posts = posts_info.get('postsArray', [])
             posts_added = 0
+            
             for post in posts:
                 try:
                     post_response = at_user.createEmbededLinkPost(
@@ -86,7 +90,8 @@ def create_newsletter_route():
                         post['subtitle'],
                         post['link'],
                         post['thumbnail_url'],
-                        post['post_date']
+                        post['post_date'],
+                        post['labels']
                     )
                     print(post_response)
                     posts_added += 1
@@ -94,9 +99,7 @@ def create_newsletter_route():
                     print(f"Skipping post {post['link']} due to error: {e}")
 
             if posts_added == 0:
-                delete_account(subdomain)
                 raise Exception("No posts were added.")
-            
             yield json.dumps({"type": "posts_added", "message": "Imported posts..."}) + '\n'
 
             # 9. finalizing
@@ -130,7 +133,21 @@ def create_newsletter_route():
             create_cloud_task(
                 endpoint, 
                 task_payload,
-                f"Add Newsletter User Graph for {subdomain}"
+                task_name=f"Add Newsletter User Graph for {subdomain}"
+            )
+
+            oldest_post_date = posts[-1]['post_date'] if posts else None
+            add_old_posts_endpoint = endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
+            add_older_posts_payload = {
+                "oldestDatePostAdded": oldest_post_date,
+                "subdomain": subdomain
+            }
+
+            create_cloud_task(
+                add_old_posts_endpoint, 
+                add_older_posts_payload,
+                os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
+                task_name=f"Adding old posts for {subdomain}"
             )
 
             # 12. completed
@@ -138,6 +155,7 @@ def create_newsletter_route():
         except Exception as e:
             if subdomain:
                 delete_account(subdomain)
+                firebase.deleteNewsletter(subdomain)
             
             payload =  json.dumps(request.get_json())
             firebase.log_failed_task(payload, "/createNewsletter", str(e))

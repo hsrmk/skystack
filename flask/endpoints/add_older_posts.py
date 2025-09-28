@@ -5,13 +5,11 @@ from utils.atproto_user import AtprotoUser
 from utils.firebase import FirebaseClient
 from utils.endpoints import SUBSTACK_NEWSLETTER_URL
 
-def build_newsletter_route():
+def add_older_posts_route():
     """
-    Handles building a newsletter by fetching new posts since last build and creating posts on Bluesky.
+    Adds posts before the oldestDatePostAdded to Bluesky Account.
     Expects JSON payload: {
-        "lastBuildDate": "string", 
-        "noOfPosts": "int",
-        "postFrequency": "float",
+        "oldestDatePostAdded": "string",  (ISO with Z)
         "subdomain": "string"
     }
     """
@@ -23,24 +21,18 @@ def build_newsletter_route():
             return {"error": "No JSON data provided"}, 400
             
         # Extract required parameters
-        lastBuildDate = data.get('lastBuildDate')
-        noOfPosts = data.get('noOfPosts')
-        postFrequency = data.get('postFrequency')
+        oldestDatePostAdded = data.get('oldestDatePostAdded')
         subdomain = data.get('subdomain')
         
         # Validate required parameters
-        if not all([lastBuildDate, noOfPosts is not None, postFrequency is not None, subdomain]):
-            return {"error": "Missing required parameters: lastBuildDate, noOfPosts, postFrequency, subdomain"}, 400
+        if not all([oldestDatePostAdded, subdomain]):
+            return {"error": "Missing required parameters: oldestDatePostAdded, subdomain"}, 400
         
         url = SUBSTACK_NEWSLETTER_URL.format(subdomain=subdomain)
 
         # Initialize newsletter and fetch new data
         newsletter = Newsletter(url)
-        newsletter_data = newsletter.getNewsletterDataSinceLastBuild(
-            lastBuildDate=lastBuildDate,
-            numberOfPosts=noOfPosts,
-            postFrequency=postFrequency
-        )
+        newsletter_data = newsletter.getOlderPosts(oldestDatePostAdded)
         
         # Initialize AtprotoUser for creating posts
         at_user = AtprotoUser(subdomain, url)
@@ -63,19 +55,14 @@ def build_newsletter_route():
                 print(f"Skipping post {post_item.get('link', 'unknown')} due to error: {e}")
         
         # Update last build details in Firebase
-        firebase.updateLastBuildDetails(
-            subdomain=subdomain,
-            lastBuildDate=newsletter_data['last_build_date'],
-            numberOfPostsAdded=newsletter_data['number_of_posts'],
-            postFrequency=newsletter_data['post_frequency']
-        )
+        firebase.updateNumPosts(subdomain, posts_added)
         
         return {
             "status": "success",
-            "message": f"Newsletter built successfully. {posts_added} posts added." if posts_added > 0 else "No new posts since last build. Nothing added."
+            "message": f"Old Posts added successfully. {posts_added} old posts added." if posts_added > 0 else "No old posts added."
         }, 200
         
     except Exception as e:
         payload =  json.dumps(request.get_json())
-        firebase.log_failed_task(payload, "/buildNewsletter", str(e))
+        firebase.log_failed_task(payload, "/addOlderPosts", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500 

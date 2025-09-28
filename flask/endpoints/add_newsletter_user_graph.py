@@ -84,7 +84,8 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
     for newsletter_subdomain in recommended_newsletters_subdomains:
         recommended_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=newsletter_subdomain)
         task_payload = {
-            "url": recommended_newsletter_url
+            "url": recommended_newsletter_url,
+            "parent_newsletter_subdomain": subdomain
         }
 
         create_cloud_task(
@@ -93,17 +94,3 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'), 
             f"Create dormant newsletter for {subdomain}"
         )
-
-    # 5. For the current user, follow all the recommended newsletters as dormant skystack newsletter accounts
-    follow_endpoint = cloud_run_endpoint.rstrip('/') + '/followUsers'
-    follow_endpoint_payload = {
-        "user": subdomain,
-        "recommended_newsletters_subdomains": recommended_newsletters_subdomains
-    }
-
-    create_cloud_task(
-        follow_endpoint,
-        follow_endpoint_payload,
-        os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-        f"Follow recommended newsletters for {subdomain}"
-    )

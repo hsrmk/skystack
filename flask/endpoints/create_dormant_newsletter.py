@@ -7,6 +7,7 @@ from utils.admin import create_account, delete_account
 from utils.atproto_user import AtprotoUser
 from utils.firebase import FirebaseClient
 from utils.create_cloud_task import create_cloud_task
+from utils.endpoints import SUBSTACK_NEWSLETTER_URL, PDS_USERNAME_EXTENSION
 
 def create_dormant_newsletter_route():
     """
@@ -25,10 +26,11 @@ def create_dormant_newsletter_route():
             
         # Extract required parameters
         url = data.get('url')
+        parent_newsletter_subdomain = data.get('parent_newsletter_subdomain')
         
         # Validate required parameter
-        if not url:
-            return {"error": "Missing required parameter: url"}, 400
+        if not all([url, parent_newsletter_subdomain]):
+            return {"error": "Missing required parameters: url/parent_newsletter_subdomain"}, 400
 
         # 2. getNewsletterAdmin
         user = User(url)
@@ -66,7 +68,8 @@ def create_dormant_newsletter_route():
                     post['subtitle'],
                     post['link'],
                     post['thumbnail_url'],
-                    post['post_date']
+                    post['post_date'],
+                    post['labels']
                 )
                 print(post_response)
                 posts_added += 1
@@ -74,7 +77,6 @@ def create_dormant_newsletter_route():
                 print(f"Skipping post {post['link']} due to error: {e}")
 
         if posts_added == 0:
-            delete_account(subdomain)
             raise Exception("No posts were added.")
         
         # 10. createNewsletter in Firebase
@@ -91,6 +93,12 @@ def create_dormant_newsletter_route():
             posts_added,
             isDormant
         )
+
+        # Parent newsletter follows this newsletter
+        parent_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=parent_newsletter_subdomain)
+        parent_newsletter_at_user = AtprotoUser(parent_newsletter_subdomain, parent_newsletter_url)
+        newsletter_handle = publication['subdomain'] + PDS_USERNAME_EXTENSION
+        parent_newsletter_at_user.followUser(newsletter_handle)
 
         # 11. create_cloud_task for /addNewsletterUserGraph
         cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
@@ -109,6 +117,7 @@ def create_dormant_newsletter_route():
         create_cloud_task(
             endpoint, 
             task_payload,
+            os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
             f"Dormant Newsletter User Graph import to Skystack only for {subdomain}"
         )
 
@@ -120,6 +129,7 @@ def create_dormant_newsletter_route():
     except Exception as e:
         if subdomain:
             delete_account(subdomain)
+            firebase.deleteNewsletter(subdomain)
         
         payload =  json.dumps(request.get_json())
         firebase.log_failed_task(payload, "/createDormantNewsletter", str(e))
