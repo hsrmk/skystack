@@ -129,11 +129,13 @@ def create_newsletter_route():
                 "publication_id": publication['publication_id'],
                 "is_dormant": False
             }
-            create_cloud_task(
+            add_graph_response = create_cloud_task(
                 endpoint, 
                 task_payload,
                 task_name=f"Add Newsletter User Graph for {subdomain}"
             )
+
+            yield json.dumps({"type": "cloud_task", "message": f"User Graph {str(add_graph_response)}"}) + '\n'
 
             oldest_post_date = posts[-1]['post_date'] if posts else None
             add_old_posts_endpoint = endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
@@ -142,12 +144,13 @@ def create_newsletter_route():
                 "subdomain": subdomain
             }
 
-            create_cloud_task(
+            old_posts_response = create_cloud_task(
                 add_old_posts_endpoint, 
                 add_older_posts_payload,
                 os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
                 task_name=f"Adding old posts for {subdomain}"
             )
+            yield json.dumps({"type": "cloud_task", "message": f"Old Posts added {str(old_posts_response)}"}) + '\n'
 
             # 12. completed
             yield json.dumps({"type": "completed", "message": "Substack account bridged!"}) + '\n'
