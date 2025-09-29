@@ -95,6 +95,7 @@ def create_newsletter_route():
                     )
                     print(post_response)
                     posts_added += 1
+                    yield json.dumps({"type": "post_added", "added_count": posts_added, "total_count": len(posts), "link": post['link']}) + '\n'
                 except Exception as e:
                     print(f"Skipping post {post['link']} due to error: {e}")
 

@@ -252,7 +252,7 @@ class FirebaseClient:
             "/activateDormantNewsletter": 8
         }
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        priority = endpoint_priority_map.get(endpoint, "normal")
+        priority = endpoint_priority_map.get(endpoint, 5)
 
         data = {
             "payload": payload,
