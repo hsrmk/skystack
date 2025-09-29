@@ -162,8 +162,16 @@ def create_newsletter_route():
                 delete_account(subdomain)
                 firebase.deleteNewsletter(subdomain)
             
-            payload =  json.dumps(request.get_json())
+            # Avoid re-reading the request JSON (can raise inside generator)
+            try:
+                payload = json.dumps(data)
+            except Exception:
+                payload = '{}'
             firebase.log_failed_task(payload, "/createNewsletter", str(e))
             yield json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"}) + '\n'
-
-    return Response(stream_with_context(event_stream()), mimetype='application/json')
+    # Add anti-buffering headers to keep streaming responsive behind proxies
+    return Response(
+        stream_with_context(event_stream()),
+        mimetype='application/json',
+        headers={'Cache-Control': 'no-cache, no-transform', 'X-Accel-Buffering': 'no'}
+    )

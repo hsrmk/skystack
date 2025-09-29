@@ -6,7 +6,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 
-from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION
+from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION, OG_CARD_ENDPOINT
 
 class AtprotoUser:
     """A class to manage a user's AT Protocol (Bluesky) account."""
@@ -133,9 +133,16 @@ class AtprotoUser:
             The response from the server containing the uploaded blob's reference.
         """
         # Download image from URL and upload as blob
-        response = requests.get(image_url)
-        response.raise_for_status()
-        image_data = BytesIO(response.content).read()
+        try:
+            response = requests.get(image_url, timeout=10)
+            response.raise_for_status()
+            image_data = BytesIO(response.content).read()
+        except requests.exceptions.Timeout:
+            # If timeout, use fallback image URL
+            image_url = self.url + OG_CARD_ENDPOINT
+            response = requests.get(image_url, timeout=10)
+            response.raise_for_status()
+            image_data = BytesIO(response.content).read()
 
         # Check if image size is greater than 500KB (512000 bytes)
         if len(image_data) > 512000:
