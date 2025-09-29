@@ -82,6 +82,7 @@ def create_dormant_newsletter_route():
         
         # 10. createNewsletter in Firebase
         isDormant = True
+        oldest_post_date = posts[-1]['post_date'] if posts else None
         firebase.createNewsletter(
             publication['publication_id'],
             publication['name'],
@@ -92,6 +93,7 @@ def create_dormant_newsletter_route():
             posts_info.get('lastBuildDate'),
             posts_info.get('postFrequency'),
             posts_added,
+            oldest_post_date,
             isDormant
         )
 

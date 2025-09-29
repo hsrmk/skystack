@@ -7,6 +7,7 @@ from endpoints.newsletter_build_check import newsletter_build_check_route
 from endpoints.create_dormant_newsletter import create_dormant_newsletter_route
 from endpoints.follow_users import follow_users_route
 from endpoints.add_older_posts import add_older_posts_route
+from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_route
 
 app = Flask(__name__)
 
@@ -41,6 +42,10 @@ def follow_users_route_wrapper():
 @app.route('/addOlderPosts', methods=['POST'])
 def add_older_posts_route_wrapper():
     return add_older_posts_route()
+
+@app.route('/activateDormantNewsletter', methods=['POST'])
+def activate_dormant_newsletter_route_wrapper():
+    return activate_dormant_newsletter_route()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))

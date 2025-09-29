@@ -33,7 +33,7 @@ class FirebaseClient:
         doc_ref = self.db.collection(collection_name).document(document_id)
         doc_ref.set(data)
 
-    def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded, isDormant = False):
+    def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded, oldestPostDate, isDormant = False):
         """
         Creates or updates a newsletter document in the 'newsletters' collection.
         :param publication_id: str
@@ -58,6 +58,7 @@ class FirebaseClient:
             "postFrequency": postFrequency,
             "numberOfPostsAdded": numberOfPostsAdded,
             "skipPostFrequencyCheck": False,
+            "oldestPostDate": oldestPostDate,
             "isDormant": isDormant
         }
         self.add_to_collection("newsletters", sub_domain, data)
@@ -93,15 +94,18 @@ class FirebaseClient:
         }
         doc_ref.update(update_data)
 
-    def updateNumPosts(self, subdomain, numberOfPostsAddedNow):
+    def updateNumPosts(self, subdomain, numberOfPostsAddedNow, oldestPostDate):
         """
         Updates numberOfPostsAdded by adding numberOfPostsAddedNow to the existing count for a newsletter by subdomain.
+        Also updates oldestPostDate (required).
         :param subdomain: str
         :param numberOfPostsAddedNow: int - number of posts to add to the existing count
+        :param oldestPostDate: str - updates oldestPostDate (required)
         """
         doc_ref = self.db.collection("newsletters").document(subdomain)
         doc = doc_ref.get()
         
+        update_fields = {}
         if doc.exists:
             current_data = doc.to_dict()
             current_posts = current_data.get("numberOfPostsAdded", 0)
@@ -115,10 +119,14 @@ class FirebaseClient:
                 # If conversion fails, treat as 0
                 updated_posts = 0 + int(numberOfPostsAddedNow) if numberOfPostsAddedNow is not None else 0
             
-            doc_ref.update({"numberOfPostsAdded": updated_posts})
+            update_fields["numberOfPostsAdded"] = updated_posts
+            update_fields["oldestPostDate"] = oldestPostDate
+            doc_ref.update(update_fields)
         else:
-            # If document doesn't exist, create it with the new post count
-            doc_ref.set({"numberOfPostsAdded": numberOfPostsAddedNow})
+            # If document doesn't exist, create it with the new post count and oldestPostDate
+            update_fields["numberOfPostsAdded"] = numberOfPostsAddedNow
+            update_fields["oldestPostDate"] = oldestPostDate
+            doc_ref.set(update_fields)
 
     def getNewslettersToBeBuilt(self):
         """
@@ -177,6 +185,44 @@ class FirebaseClient:
         doc = doc_ref.get()
         return doc.exists
     
+    def getRecommendedNewsletterSubdomains(self, subdomain):
+        """
+        Returns a list of subdomains for recommended newsletters by subdomain.
+        :param subdomain: str
+        :return: list of str (subdomains)
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return []
+        data = doc.to_dict() or {}
+        recommended = data.get("recommendedNewsletters")
+        if not isinstance(recommended, list):
+            return []
+        return [newsletter.get('subdomain') for newsletter in recommended if 'subdomain' in newsletter]
+
+    def getOldestPostDate(self, subdomain):
+        """
+        Returns the oldestPostDate field for a newsletter by subdomain.
+        :param subdomain: str
+        :return: str | None
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return None
+        data = doc.to_dict() or {}
+        return data.get("oldestPostDate")
+
+    def setDormantNewsletterActive(self, subdomain):
+        """
+        Sets the isDormant flag to False for a newsletter by subdomain.
+        Per request: makes the isDormant flag to False from True.
+        :param subdomain: str
+        """
+        doc_ref = self.db.collection("newsletters").document(subdomain)
+        doc_ref.update({"isDormant": False})
+
     def deleteNewsletter(self, subdomain):
         """
         Deletes a newsletter document from the 'newsletters' collection by subdomain.
@@ -202,7 +248,8 @@ class FirebaseClient:
             "/createDormantNewsletter": 4,
             "/addNewsletterUserGraph": 5,
             "/followUsers": 6,
-            "/addOlderPosts": 7
+            "/addOlderPosts": 7,
+            "/activateDormantNewsletter": 8
         }
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         priority = endpoint_priority_map.get(endpoint, "normal")

@@ -55,7 +55,8 @@ def add_older_posts_route():
                 print(f"Skipping post {post_item.get('link', 'unknown')} due to error: {e}")
         
         # Update last build details in Firebase
-        firebase.updateNumPosts(subdomain, posts_added)
+        oldest_post_date = newsletter_data[-1]['post_date'] if newsletter_data else None
+        firebase.updateNumPosts(subdomain, posts_added, oldest_post_date)
         
         return {
             "status": "success",

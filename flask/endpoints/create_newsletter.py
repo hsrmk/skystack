@@ -106,6 +106,7 @@ def create_newsletter_route():
             yield json.dumps({"type": "finalizing", "message": "Finalizing setup..."}) + '\n'
 
             # 10. createNewsletter in Firebase
+            oldest_post_date = posts[-1]['post_date'] if posts else None
             firebase.createNewsletter(
                 publication['publication_id'],
                 publication['name'],
@@ -115,7 +116,8 @@ def create_newsletter_route():
                 publication['logo_url'],
                 posts_info.get('lastBuildDate'),
                 posts_info.get('postFrequency'),
-                posts_added
+                posts_added,
+                oldest_post_date
             )
 
             # 11. create_cloud_task for /addNewsletterUserGraph
@@ -138,7 +140,6 @@ def create_newsletter_route():
 
             yield json.dumps({"type": "cloud_task", "message": f"User Graph {str(add_graph_response)}"}) + '\n'
 
-            oldest_post_date = posts[-1]['post_date'] if posts else None
             add_old_posts_endpoint = endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
             add_older_posts_payload = {
                 "oldestDatePostAdded": oldest_post_date,
