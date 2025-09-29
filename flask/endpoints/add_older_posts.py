@@ -39,7 +39,7 @@ def add_older_posts_route():
         
         # Create embedded link posts for each new post item
         posts_added = 0
-        for post_item in newsletter_data['post_items']:
+        for post_item in newsletter_data:
             try:
                 at_user.createEmbededLinkPost(
                     post_item['title'],

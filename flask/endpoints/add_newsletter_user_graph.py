@@ -28,9 +28,9 @@ def add_newsletter_user_graph_route():
         subdomain = data.get('subdomain')
         publication_id = data.get('publication_id')
         is_dormant = data.get('is_dormant')
-        
+
         # Validate required parameters
-        if not all([subdomain, publication_id, is_dormant]):
+        if not (subdomain and publication_id and is_dormant is not None):
             return {"error": "Missing required parameters: subdomain, publication_id, is_dormant"}, 400
         
         url = SUBSTACK_NEWSLETTER_URL.format(subdomain=subdomain)
