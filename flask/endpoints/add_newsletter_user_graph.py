@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from flask import request
 from utils.newsletter import Newsletter
 from utils.user import User
@@ -92,5 +93,5 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             endpoint, 
             task_payload, 
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'), 
-            f"create_dormant_newsletter_{subdomain}"
+            f"create_dormant_newsletter_{subdomain}_{int(time.time())}"
         )

@@ -1,6 +1,7 @@
 from flask import request, Response, stream_with_context
 import json
 import os
+import time
 from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account, delete_account
@@ -132,7 +133,7 @@ def create_newsletter_route():
             add_graph_response = create_cloud_task(
                 endpoint, 
                 task_payload,
-                task_name=f"add_user_graph_{subdomain}"
+                task_name=f"add_user_graph_{subdomain}_{int(time.time())}"
             )
 
             yield json.dumps({"type": "cloud_task", "message": f"User Graph {str(add_graph_response)}"}) + '\n'
@@ -148,7 +149,7 @@ def create_newsletter_route():
                 add_old_posts_endpoint, 
                 add_older_posts_payload,
                 os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-                task_name=f"add_older_posts_{subdomain}"
+                task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
             )
             yield json.dumps({"type": "cloud_task", "message": f"Old Posts added {str(old_posts_response)}"}) + '\n'
 

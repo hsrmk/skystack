@@ -1,6 +1,7 @@
 from flask import request
 import json
 import os
+import time
 from utils.user import User
 from utils.newsletter import Newsletter
 from utils.admin import create_account, delete_account
@@ -118,7 +119,7 @@ def create_dormant_newsletter_route():
             endpoint, 
             task_payload,
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-            f"dormant_newsletter_user_graph_{subdomain}"
+            f"dormant_newsletter_user_graph_{subdomain}_{int(time.time())}"
         )
 
         return {
