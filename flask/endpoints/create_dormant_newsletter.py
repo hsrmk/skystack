@@ -118,7 +118,7 @@ def create_dormant_newsletter_route():
             endpoint, 
             task_payload,
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-            f"Dormant Newsletter User Graph import to Skystack only for {subdomain}"
+            f"dormant_newsletter_user_graph_{subdomain}"
         )
 
         return {
