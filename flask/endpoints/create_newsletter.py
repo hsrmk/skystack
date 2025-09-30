@@ -20,16 +20,16 @@ def create_newsletter_route():
         try:
             data = request.get_json()
             if not data or 'url' not in data:
-                yield json.dumps({"type": "error", "message": "Missing 'url' in request body"}) + '\n'
+                yield f"data: {json.dumps({"type": "error", "message": "Missing 'url' in request body"})}\n\n"
                 return
             url = data['url']
-            yield json.dumps({"type": "processing", "message": "Creating account..."}) + '\n'
+            yield f"data: {json.dumps({"type": "processing", "message": "Creating account..."})}\n\n"
 
             # 2. getNewsletterAdmin
             user = User(url)
             admin = user.getNewsletterAdmin()
             if not admin:
-                yield json.dumps({"type": "error", "message": "Could not fetch newsletter admin"}) + '\n'
+                yield f"data: {json.dumps({"type": "error", "message": "Could not fetch newsletter admin"})}\n\n"
                 return
             # yield json.dumps({"type": "admin_fetched", **admin}) + '\n'
             
@@ -37,29 +37,30 @@ def create_newsletter_route():
             newsletter = Newsletter(url)
             publication = newsletter.getPublication(admin['admin_handle'])
             if not publication:
-                yield json.dumps({"type": "error", "message": "Could not fetch publication details"}) + '\n'
+                yield f"data: {json.dumps({"type": "error", "message": "Could not fetch publication details"})}\n\n"
                 return
-            yield json.dumps({"type": "publication_fetched", **publication}) + '\n'
+            yield f"data: {json.dumps({"type": "publication_fetched", **publication})}\n\n"
             
             # 4. create_account
             subdomain = publication['subdomain']
+            yield f"data: {json.dumps({"type": "duplicate_newsletter_check"})}\n\n"
             
             if firebase.checkIfNewsletterExists(subdomain):
-                yield json.dumps({
+                yield f"data: {json.dumps({
                     "type": "duplicate_newsletter", 
                     "message": "Newsletter already exists",
                     "account": subdomain,
                     "name": publication['name'],
                     "description": publication['hero_text'],
                     "logo_url": publication['logo_url']    
-                }) + '\n'
+                })}\n\n"
                 return
             
-            yield json.dumps({"type": "duplicate_newsletter_check"}) + '\n'
+            yield f"data: {json.dumps({"type": "duplicate_newsletter_check"})}\n\n"
 
             account_response = create_account(subdomain)
             if not account_response:
-                yield json.dumps({"type": "error", "message": "Account creation failed"}) + '\n'
+                yield f"data: {json.dumps({"type": "error", "message": "Account creation failed"})}\n\n"
                 return
 
             # 5. updateProfileDetails
@@ -67,16 +68,16 @@ def create_newsletter_route():
             at_user.updateProfileDetails(
                 publication['name'], publication['hero_text'], publication['logo_url']
             )
-            yield json.dumps({
+            yield f"data: {json.dumps({
                 "type": "account_created",
                 "account": subdomain,
                 "name": publication['name'],
                 "description": publication['hero_text'],
                 "logo_url": publication['logo_url']
-            }) + '\n'
+            })}\n\n"
 
             # 6. creatingPosts event
-            yield json.dumps({"type": "creating_posts", "message": "Importing posts..."}) + '\n'
+            yield f"data: {json.dumps({"type": "creating_posts", "message": "Importing posts..."})}\n\n"
 
             # 7. getPosts
             posts_info = newsletter.getPosts(limit=10)
@@ -95,16 +96,17 @@ def create_newsletter_route():
                     )
                     print(post_response)
                     posts_added += 1
-                    yield json.dumps({"type": "post_added", "added_count": posts_added, "total_count": len(posts), "link": post['link']}) + '\n'
+                    yield f"data: {json.dumps({"type": "post_added", "added_count": posts_added, "total_count": len(posts), "link": post['link']})}\n\n"
                 except Exception as e:
                     print(f"Skipping post {post['link']} due to error: {e}")
 
             if posts_added == 0:
                 raise Exception("No posts were added.")
-            yield json.dumps({"type": "posts_added", "message": "Imported posts..."}) + '\n'
+            
+            yield f"data: {json.dumps({"type": "posts_added", "message": "Imported posts..."})}\n\n"
 
             # 9. finalizing
-            yield json.dumps({"type": "finalizing", "message": "Finalizing setup..."}) + '\n'
+            yield f"data: {json.dumps({"type": "finalizing", "message": "Finalizing setup..."})}\n\n"
 
             # 10. createNewsletter in Firebase
             oldest_post_date = posts[-1]['post_date'] if posts else None
@@ -124,7 +126,7 @@ def create_newsletter_route():
             # 11. create_cloud_task for /addNewsletterUserGraph
             cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
             if not cloud_run_endpoint:
-                yield json.dumps({"type": "partial_error", "message": "Account created and posts imported, but couldn't complete mirroring."}) + '\n'
+                yield f"data: {json.dumps({"type": "partial_error", "message": "Account created and posts imported, but couldn't complete mirroring."})}\n\n"
                 return
             
             endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
@@ -138,8 +140,8 @@ def create_newsletter_route():
                 task_payload,
                 task_name=f"add_user_graph_{subdomain}_{int(time.time())}"
             )
-
-            yield json.dumps({"type": "cloud_task", "message": f"User Graph {str(add_graph_response)}"}) + '\n'
+            
+            yield f"data: {json.dumps({"type": "cloud_task", "message": f"User Graph {str(add_graph_response)}"})}\n\n"
 
             add_old_posts_endpoint = endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
             add_older_posts_payload = {
@@ -153,10 +155,10 @@ def create_newsletter_route():
                 os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
                 task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
             )
-            yield json.dumps({"type": "cloud_task", "message": f"Old Posts added {str(old_posts_response)}"}) + '\n'
+            yield f"data: {json.dumps({"type": "cloud_task", "message": f"Old Posts added {str(old_posts_response)}"})}\n\n"
 
             # 12. completed
-            yield json.dumps({"type": "completed", "message": "Substack account bridged!"}) + '\n'
+            yield f"data: {json.dumps({"type": "completed", "message": "Substack account bridged!"})}\n\n"
         except Exception as e:
             if subdomain:
                 delete_account(subdomain)
@@ -168,10 +170,10 @@ def create_newsletter_route():
             except Exception:
                 payload = '{}'
             firebase.log_failed_task(payload, "/createNewsletter", str(e))
-            yield json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"}) + '\n'
+            yield f"data: {json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"})}\n\n"
     # Add anti-buffering headers to keep streaming responsive behind proxies
     return Response(
         stream_with_context(event_stream()),
-        mimetype='application/json',
-        headers={'Cache-Control': 'no-cache, no-transform', 'X-Accel-Buffering': 'no'}
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache"}
     )
