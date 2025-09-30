@@ -46,14 +46,15 @@ def create_newsletter_route():
             yield f"data: {json.dumps({"type": "duplicate_newsletter_check"})}\n\n"
             
             if firebase.checkIfNewsletterExists(subdomain):
-                yield f"data: {json.dumps({
+                already_exists_json_dump = {
                     "type": "duplicate_newsletter", 
                     "message": "Newsletter already exists",
                     "account": subdomain,
                     "name": publication['name'],
                     "description": publication['hero_text'],
                     "logo_url": publication['logo_url']    
-                })}\n\n"
+                }
+                yield f"data: {json.dumps(already_exists_json_dump)}\n\n"
                 return
             
             yield f"data: {json.dumps({"type": "duplicate_newsletter_check"})}\n\n"
@@ -68,13 +69,15 @@ def create_newsletter_route():
             at_user.updateProfileDetails(
                 publication['name'], publication['hero_text'], publication['logo_url']
             )
-            yield f"data: {json.dumps({
+            
+            account_created_json_dump = {
                 "type": "account_created",
                 "account": subdomain,
                 "name": publication['name'],
                 "description": publication['hero_text'],
                 "logo_url": publication['logo_url']
-            })}\n\n"
+            }
+            yield f"data: {json.dumps(account_created_json_dump)}\n\n"
 
             # 6. creatingPosts event
             yield f"data: {json.dumps({"type": "creating_posts", "message": "Importing posts..."})}\n\n"
@@ -171,7 +174,7 @@ def create_newsletter_route():
                 payload = '{}'
             firebase.log_failed_task(payload, "/createNewsletter", str(e))
             yield f"data: {json.dumps({"type": "error", "message": f"Internal server error: {str(e)}"})}\n\n"
-    # Add anti-buffering headers to keep streaming responsive behind proxies
+    
     return Response(
         stream_with_context(event_stream()),
         mimetype="text/event-stream",
