@@ -1,4 +1,4 @@
-from flask import request, Response, stream_with_context
+from flask import request, jsonify
 import json
 import os
 import time
@@ -11,173 +11,146 @@ from utils.create_cloud_task import create_cloud_task
 
 def create_newsletter_route():
     """
-    Handles the creation of a newsletter and bridges it to Bluesky, streaming progress events.
+    Handles the creation of a newsletter and bridges it to Bluesky.
     Expects JSON payload: { "url": "string" }
+    Returns a standard JSON response.
     """
     firebase = FirebaseClient()
-    def event_stream():
-        subdomain = None
-        try:
-            data = request.get_json()
-            if not data or 'url' not in data:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Missing url in request body'})}\n\n"
-                return
-            url = data['url']
-            yield f"data: {json.dumps({'type': 'processing', 'message': 'Creating account...'})}\n\n"
+    subdomain = None
+    data = None
+    try:
+        data = request.get_json()
+        if not data or 'url' not in data:
+            return jsonify({"error": "Missing url in request body"}), 400
+        url = data['url']
 
-            # 2. getNewsletterAdmin
-            user = User(url)
-            admin = user.getNewsletterAdmin()
-            if not admin:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Could not fetch newsletter admin'})}\n\n"
-                return
-            # yield json.dumps({'type': 'admin_fetched', **admin}) + '\n'
-            
-            # 3. getPublication
-            newsletter = Newsletter(url)
-            publication = newsletter.getPublication(admin['admin_handle'])
-            if not publication:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Could not fetch publication details'})}\n\n"
-                return
-            yield f"data: {json.dumps({'type': 'publication_fetched', **publication})}\n\n"
-            
-            # 4. create_account
-            subdomain = publication['subdomain']
-            yield f"data: {json.dumps({'type': 'duplicate_newsletter_check'})}\n\n"
-            
-            if firebase.checkIfNewsletterExists(subdomain):
-                already_exists_json_dump = {
-                    "type": "duplicate_newsletter", 
-                    'message': "Newsletter already exists",
-                    "account": subdomain,
-                    "name": publication['name'],
-                    "description": publication['hero_text'],
-                    "logo_url": publication['logo_url']    
-                }
-                yield f"data: {json.dumps(already_exists_json_dump)}\n\n"
-                return
-            
-            yield f"data: {json.dumps({'type': 'duplicate_newsletter_check'})}\n\n"
+        # 2. getNewsletterAdmin
+        user = User(url)
+        admin = user.getNewsletterAdmin()
+        if not admin:
+            return jsonify({"error": "Could not fetch newsletter admin"}), 400
 
-            account_response = create_account(subdomain)
-            if not account_response:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Account creation failed'})}\n\n"
-                return
+        # 3. getPublication
+        newsletter = Newsletter(url)
+        publication = newsletter.getPublication(admin['admin_handle'])
+        if not publication:
+            return jsonify({"error": "Could not fetch publication details"}), 400
 
-            # 5. updateProfileDetails
-            at_user = AtprotoUser(subdomain, url)
-            at_user.updateProfileDetails(
-                publication['name'], publication['hero_text'], publication['logo_url']
-            )
-            
-            account_created_json_dump = {
-                'type': 'account_created',
+        # 4. create_account
+        subdomain = publication['subdomain']
+        if firebase.checkIfNewsletterExists(subdomain):
+            return jsonify({
+                "type": "duplicate_newsletter",
+                "message": "Newsletter already exists",
                 "account": subdomain,
                 "name": publication['name'],
                 "description": publication['hero_text'],
                 "logo_url": publication['logo_url']
-            }
-            yield f"data: {json.dumps(account_created_json_dump)}\n\n"
+            }), 409
 
-            # 6. creatingPosts event
-            yield f"data: {json.dumps({'type': 'creating_posts', 'message': 'Importing posts...'})}\n\n"
+        account_response = create_account(subdomain)
+        if not account_response:
+            return jsonify({"error": "Account creation failed"}), 500
 
-            # 7. getPosts
-            posts_info = newsletter.getPosts(limit=10)
-            posts = posts_info.get('postsArray', [])
-            posts_added = 0
-            
-            for post in posts:
-                try:
-                    post_response = at_user.createEmbededLinkPost(
-                        post['title'],
-                        post['subtitle'],
-                        post['link'],
-                        post['thumbnail_url'],
-                        post['post_date'],
-                        post['labels']
-                    )
-                    print(post_response)
-                    posts_added += 1
-                    post_added_json_dump = {"type": "post_added", "added_count": posts_added, "total_count": len(posts), "link": post['link']}
-                    yield f"data: {json.dumps(post_added_json_dump)}\n\n"
-                except Exception as e:
-                    print(f"Skipping post {post['link']} due to error: {e}")
+        # 5. updateProfileDetails
+        at_user = AtprotoUser(subdomain, url)
+        at_user.updateProfileDetails(
+            publication['name'], publication['hero_text'], publication['logo_url']
+        )
 
-            if posts_added == 0:
-                raise Exception("No posts were added.")
-            
-            yield f"data: {json.dumps({'type': 'posts_added', 'message': 'Imported posts...'})}\n\n"
+        # 7. getPosts
+        posts_info = newsletter.getPosts(limit=10)
+        posts = posts_info.get('postsArray', [])
+        posts_added = 0
 
-            # 9. finalizing
-            yield f"data: {json.dumps({'type': 'finalizing', 'message': 'Finalizing setup...'})}\n\n"
-
-            # 10. createNewsletter in Firebase
-            oldest_post_date = posts[-1]['post_date'] if posts else None
-            firebase.createNewsletter(
-                publication['publication_id'],
-                publication['name'],
-                subdomain,
-                publication['custom_domain'],
-                publication['hero_text'],
-                publication['logo_url'],
-                posts_info.get('lastBuildDate'),
-                posts_info.get('postFrequency'),
-                posts_added,
-                oldest_post_date
-            )
-
-            # 11. create_cloud_task for /addNewsletterUserGraph
-            cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
-            if not cloud_run_endpoint:
-                yield f"data: {json.dumps({'type': 'partial_error', 'message': 'Account created and posts imported, but could not complete mirroring.'})}\n\n"
-                return
-            
-            endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
-            task_payload = {
-                "subdomain": subdomain,
-                "publication_id": publication['publication_id'],
-                "is_dormant": False
-            }
-            add_graph_response = create_cloud_task(
-                endpoint, 
-                task_payload,
-                task_name=f"add_user_graph_{subdomain}_{int(time.time())}"
-            )
-            
-            yield f"data: {json.dumps({'type': 'cloud_task', 'message': f'User Graph {str(add_graph_response)}'})}\n\n"
-
-            add_old_posts_endpoint = endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
-            add_older_posts_payload = {
-                "oldestDatePostAdded": oldest_post_date,
-                "subdomain": subdomain
-            }
-
-            old_posts_response = create_cloud_task(
-                add_old_posts_endpoint, 
-                add_older_posts_payload,
-                os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-                task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
-            )
-            yield f"data: {json.dumps({'type': 'cloud_task', 'message': f'Old Posts added {str(old_posts_response)}'})}\n\n"
-
-            # 12. completed
-            yield f"data: {json.dumps({'type': 'completed', 'message': 'Substack account bridged!'})}\n\n"
-        except Exception as e:
-            if subdomain:
-                delete_account(subdomain)
-                firebase.deleteNewsletter(subdomain)
-            
-            # Avoid re-reading the request JSON (can raise inside generator)
+        for post in posts:
             try:
-                payload = json.dumps(data)
-            except Exception:
-                payload = '{}'
-            firebase.log_failed_task(payload, "/createNewsletter", str(e))
-            yield f"data: {json.dumps({'type': 'error', 'message': f'Internal server error: {str(e)}'})}\n\n"
-    
-    return Response(
-        stream_with_context(event_stream()),
-        mimetype="text/event-stream",
-        headers={"Cache-Control": "no-cache"}
-    )
+                post_response = at_user.createEmbededLinkPost(
+                    post['title'],
+                    post['subtitle'],
+                    post['link'],
+                    post['thumbnail_url'],
+                    post['post_date'],
+                    post['labels']
+                )
+                print(post_response)
+                posts_added += 1
+            except Exception as e:
+                print(f"Skipping post {post['link']} due to error: {e}")
+
+        if posts_added == 0:
+            raise Exception("No posts were added.")
+
+        # 10. createNewsletter in Firebase
+        oldest_post_date = posts[-1]['post_date'] if posts else None
+        firebase.createNewsletter(
+            publication['publication_id'],
+            publication['name'],
+            subdomain,
+            publication['custom_domain'],
+            publication['hero_text'],
+            publication['logo_url'],
+            posts_info.get('lastBuildDate'),
+            posts_info.get('postFrequency'),
+            posts_added,
+            oldest_post_date
+        )
+
+        # 11. create_cloud_task for /addNewsletterUserGraph
+        cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
+        if not cloud_run_endpoint:
+            return jsonify({
+                "type": "partial_error",
+                "message": "Account created and posts imported, but could not complete mirroring.",
+                "account": subdomain,
+                "posts_added": posts_added
+            }), 200
+
+        endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
+        task_payload = {
+            "subdomain": subdomain,
+            "publication_id": publication['publication_id'],
+            "is_dormant": False
+        }
+        add_graph_response = create_cloud_task(
+            endpoint,
+            task_payload,
+            task_name=f"add_user_graph_{subdomain}_{int(time.time())}"
+        )
+
+        add_old_posts_endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
+        add_older_posts_payload = {
+            "oldestDatePostAdded": oldest_post_date,
+            "subdomain": subdomain
+        }
+
+        old_posts_response = create_cloud_task(
+            add_old_posts_endpoint,
+            add_older_posts_payload,
+            os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
+            task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
+        )
+
+        return jsonify({
+            "type": "completed",
+            "message": "Substack account bridged!",
+            "account": subdomain,
+            "name": publication['name'],
+            "description": publication['hero_text'],
+            "logo_url": publication['logo_url'],
+            "posts_added": posts_added,
+            "cloud_tasks": {
+                "user_graph": str(add_graph_response),
+                "older_posts": str(old_posts_response)
+            }
+        }), 200
+    except Exception as e:
+        if subdomain:
+            delete_account(subdomain)
+            firebase.deleteNewsletter(subdomain)
+        try:
+            payload = json.dumps(data)
+        except Exception:
+            payload = '{}'
+        firebase.log_failed_task(payload, "/createNewsletter", str(e))
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
