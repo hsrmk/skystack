@@ -21,36 +21,36 @@ def create_newsletter_route():
     try:
         data = request.get_json()
         if not data or 'url' not in data:
-            return jsonify({"error": "Missing url in request body"}), 400
+            return {"error": "Missing url in request body"}, 400
         url = data['url']
 
         # 2. getNewsletterAdmin
         user = User(url)
         admin = user.getNewsletterAdmin()
         if not admin:
-            return jsonify({"error": "Could not fetch newsletter admin"}), 400
+            return {"error": "Could not fetch newsletter admin"}, 400
 
         # 3. getPublication
         newsletter = Newsletter(url)
         publication = newsletter.getPublication(admin['admin_handle'])
         if not publication:
-            return jsonify({"error": "Could not fetch publication details"}), 400
+            return {"error": "Could not fetch publication details"}, 400
 
         # 4. create_account
         subdomain = publication['subdomain']
         if firebase.checkIfNewsletterExists(subdomain):
-            return jsonify({
+            return {
                 "type": "duplicate_newsletter",
                 "message": "Newsletter already exists",
                 "account": subdomain,
                 "name": publication['name'],
                 "description": publication['hero_text'],
                 "logo_url": publication['logo_url']
-            }), 409
+            }, 409
 
         account_response = create_account(subdomain)
         if not account_response:
-            return jsonify({"error": "Account creation failed"}), 500
+            return {"error": "Account creation failed"}, 500
 
         # 5. updateProfileDetails
         at_user = AtprotoUser(subdomain, url)
@@ -99,12 +99,12 @@ def create_newsletter_route():
         # 11. create_cloud_task for /addNewsletterUserGraph
         cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
         if not cloud_run_endpoint:
-            return jsonify({
+            return {
                 "type": "partial_error",
                 "message": "Account created and posts imported, but could not complete mirroring.",
                 "account": subdomain,
                 "posts_added": posts_added
-            }), 200
+            }, 200
 
         endpoint = cloud_run_endpoint.rstrip('/') + '/addNewsletterUserGraph'
         task_payload = {
@@ -131,7 +131,7 @@ def create_newsletter_route():
             task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
         )
 
-        return jsonify({
+        return {
             "type": "completed",
             "message": "Substack account bridged!",
             "account": subdomain,
@@ -143,7 +143,7 @@ def create_newsletter_route():
                 "user_graph": str(add_graph_response),
                 "older_posts": str(old_posts_response)
             }
-        }), 200
+        }, 200
     except Exception as e:
         if subdomain:
             delete_account(subdomain)
@@ -153,4 +153,4 @@ def create_newsletter_route():
         except Exception:
             payload = '{}'
         firebase.log_failed_task(payload, "/createNewsletter", str(e))
-        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+        return {"error": f"Internal server error: {str(e)}"}, 500
