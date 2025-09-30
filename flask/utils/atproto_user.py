@@ -144,32 +144,5 @@ class AtprotoUser:
             response.raise_for_status()
             image_data = BytesIO(response.content).read()
 
-        # Check if image size is greater than 500KB (512000 bytes)
-        if len(image_data) > 512000:
-            img = Image.open(BytesIO(image_data))
-            img_format = img.format if img.format else 'JPEG'
-            # Start with quality 85, reduce by 5, but if still too large at quality=20, resize image
-            quality = 85
-            buffer = BytesIO()
-            while True:
-                buffer.seek(0)
-                buffer.truncate()
-                img.save(buffer, format=img_format, quality=quality, optimize=True)
-                if buffer.tell() <= 512000:
-                    break
-                if quality > 20:
-                    quality -= 5
-                else:
-                    # If quality is already low, start resizing
-                    width, height = img.size
-                    # Reduce size by 10% each iteration
-                    new_width = int(width * 0.9)
-                    new_height = int(height * 0.9)
-                    if new_width < 1 or new_height < 1:
-                        # If image is too small, break to avoid errors
-                        break
-                    img = img.resize((new_width, new_height), Image.LANCZOS)
-            image_data = buffer.getvalue()
-
         blob_response = self.client.com.atproto.repo.upload_blob(image_data, headers={"Content-Type": "url/" + image_url})
         return blob_response
