@@ -101,7 +101,7 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             endpoint,
             task_payload,
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-            f"create_dormant_newsletter_{subdomain}_{int(time.time())}"
+            f"create_dormant_newsletter_{newsletter_subdomain}_{subdomain}_{int(time.time())}"
         )
         task_responses.append({
             "subdomain": newsletter_subdomain,
