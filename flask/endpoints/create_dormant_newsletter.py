@@ -43,8 +43,10 @@ def create_dormant_newsletter_route():
         
         # 4. create_account
         subdomain = publication['subdomain']
+        newsletter_handle = publication['subdomain'] + PDS_USERNAME_EXTENSION
 
         if firebase.checkIfNewsletterExists(subdomain):
+            parentNewsletterFollowsRecommendedNewsletters(parent_newsletter_subdomain, newsletter_handle)
             return {
                 "status": "success",
                 "message": f"Newsletter already built."
@@ -98,10 +100,7 @@ def create_dormant_newsletter_route():
         )
 
         # Parent newsletter follows this newsletter
-        parent_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=parent_newsletter_subdomain)
-        parent_newsletter_at_user = AtprotoUser(parent_newsletter_subdomain, parent_newsletter_url)
-        newsletter_handle = publication['subdomain'] + PDS_USERNAME_EXTENSION
-        parent_newsletter_at_user.followUser(newsletter_handle)
+        parentNewsletterFollowsRecommendedNewsletters(parent_newsletter_subdomain, newsletter_handle)
 
         # 11. create_cloud_task for /addNewsletterUserGraph
         cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
@@ -137,3 +136,10 @@ def create_dormant_newsletter_route():
         payload =  json.dumps(request.get_json())
         firebase.log_failed_task(payload, "/createDormantNewsletter", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500 
+
+
+def parentNewsletterFollowsRecommendedNewsletters(parent_newsletter_subdomain, newsletter_handle):
+    parent_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=parent_newsletter_subdomain)
+    
+    parent_newsletter_at_user = AtprotoUser(parent_newsletter_subdomain, parent_newsletter_url)
+    parent_newsletter_at_user.followUser(newsletter_handle)
