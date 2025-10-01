@@ -208,7 +208,7 @@ class Newsletter:
         Returns:
         - items (list[dict]): post dicts with keys: title, subtitle, link, id, thumbnail_url, post_date
         """
-        MAX_ITEMS = 5000
+        MAX_ITEMS = 100
 
         if not oldestAddedPostDate:
             return [], []

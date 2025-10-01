@@ -117,7 +117,8 @@ class AtprotoUser:
             The response from the server after following the user.
         """
         try:
-            follow_response = self.client.follow(follow_user)
+            user_data = self.client.resolve_handle(follow_user)
+            follow_response = self.client.follow(user_data.did)
             return follow_response
         except Exception as e:
             print(f"Error following user {follow_user}: {e}")

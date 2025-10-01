@@ -53,17 +53,23 @@ def add_newsletter_user_graph_route():
             recommendedUsers=recommended_users
         )
 
+        cloud_tasks_info = None
         if not is_dormant:
             recommended_newsletters_subdomains = [newsletter['subdomain'] for newsletter in recommended_newsletters]
-            create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters_subdomains)
-        
-        return {
+            cloud_tasks_info = create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters_subdomains)
+
+        response_body = {
             "status": "success", 
             "message": "Newsletter user graph updated successfully",
             "newsletter_users_count": len(newsletter_users),
             "recommended_newsletters_count": len(recommended_newsletters),
             "recommended_users_count": len(recommended_users)
-        }, 200
+        }
+
+        if cloud_tasks_info is not None:
+            response_body["cloud_tasks"] = cloud_tasks_info
+
+        return response_body, 200
         
     except Exception as e:
         payload =  json.dumps(request.get_json())
@@ -77,11 +83,13 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
     if not cloud_run_endpoint:
         return {
             "status": "warning",
-            "message": "Newsletter user graph only imported to Skystack, not create in Bluesky."
-        }, 200
-    
+            "message": "Newsletter user graph only imported to Skystack, not created in Bluesky.",
+            "create_dormant_newsletters": []
+        }
+
     endpoint = cloud_run_endpoint.rstrip('/') + '/createDormantNewsletter'
 
+    task_responses = []
     for newsletter_subdomain in recommended_newsletters_subdomains:
         recommended_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=newsletter_subdomain)
         task_payload = {
@@ -89,9 +97,18 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             "parent_newsletter_subdomain": subdomain
         }
 
-        create_cloud_task(
-            endpoint, 
-            task_payload, 
-            os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'), 
+        task_response = create_cloud_task(
+            endpoint,
+            task_payload,
+            os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
             f"create_dormant_newsletter_{subdomain}_{int(time.time())}"
         )
+        task_responses.append({
+            "subdomain": newsletter_subdomain,
+            **(task_response or {"status": "error", "message": "Unknown error creating task"})
+        })
+
+    return {
+        "status": "success",
+        "create_dormant_newsletters": task_responses
+    }
