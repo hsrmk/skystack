@@ -1,23 +1,27 @@
 import os
 import json
+from datetime import datetime, timedelta, timezone
 from google.cloud import tasks_v2
+from google.protobuf import timestamp_pb2
 from utils.utils import is_localhost
 
 def create_cloud_task(
         endpoint: str, 
         payload: dict, 
         queue_name: str = os.environ.get('CLOUD_TASKS_CREATE_AND_BUILD_QUEUE', 'default'), 
-        task_name: str = None
+        task_name: str = None,
+        delay_seconds: int = None
     ):
     """
     Creates a Google Cloud Task with the specified endpoint and payload.
-    Optionally sets a custom task name.
+    Optionally sets a custom task name and delay.
 
     Args:
         endpoint (str): The endpoint URL where the task will be sent
         payload (dict): The payload data to be sent with the task
         queue_name (str): Queue name
         task_name (str, optional): Custom name for the task
+        delay_seconds (int, optional): Delay in seconds before the task should run
 
     Returns:
         dict: Response containing task information or error details
@@ -47,6 +51,13 @@ def create_cloud_task(
                     'body': json.dumps(payload).encode()
                 }
             }
+
+            # Add schedule_time if delay_seconds is provided
+            if delay_seconds is not None:
+                schedule_time = datetime.now(timezone.utc) + timedelta(seconds=delay_seconds)
+                timestamp = timestamp_pb2.Timestamp()
+                timestamp.FromDatetime(schedule_time)
+                task['schedule_time'] = timestamp
 
             if task_name:
                 task['name'] = client.task_path(project_id, location, queue_name, task_name)

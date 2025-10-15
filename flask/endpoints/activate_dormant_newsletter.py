@@ -38,13 +38,14 @@ def activate_dormant_newsletter_route():
         add_old_posts_endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
         add_older_posts_payload = {
             "oldestDatePostAdded": oldest_added_post,
-            "subdomain": subdomain
+            "subdomain": subdomain,
+            "numberOfIterations": 10
         }
 
         old_posts_response = create_cloud_task(
             add_old_posts_endpoint, 
             add_older_posts_payload,
-            os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
+            os.environ.get('CLOUD_TASKS_OLD_POSTS_IMPORT_QUEUE', 'default'),
             task_name=f"add_older_posts_{subdomain}_{int(time.time())}"
         )
         print("old_posts_response: ", old_posts_response)

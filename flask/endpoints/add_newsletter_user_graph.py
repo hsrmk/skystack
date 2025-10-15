@@ -90,7 +90,7 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
     endpoint = cloud_run_endpoint.rstrip('/') + '/createDormantNewsletter'
 
     task_responses = []
-    for newsletter_subdomain in recommended_newsletters_subdomains:
+    for index, newsletter_subdomain in enumerate(recommended_newsletters_subdomains, start=1):
         recommended_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=newsletter_subdomain)
         task_payload = {
             "url": recommended_newsletter_url,
@@ -101,10 +101,12 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             endpoint,
             task_payload,
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
-            f"create_dormant_newsletter_{newsletter_subdomain}_{subdomain}_{int(time.time())}"
+            f"create_dormant_newsletter_{newsletter_subdomain}_{subdomain}_{int(time.time())}",
+            delay_seconds=index * 30
         )
         task_responses.append({
             "subdomain": newsletter_subdomain,
+            "index": index,
             **(task_response or {"status": "error", "message": "Unknown error creating task"})
         })
 

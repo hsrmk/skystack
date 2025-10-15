@@ -208,7 +208,7 @@ class Newsletter:
         Returns:
         - items (list[dict]): post dicts with keys: title, subtitle, link, id, thumbnail_url, post_date
         """
-        MAX_ITEMS = 100
+        MAX_ITEMS = 10
 
         if not oldestAddedPostDate:
             return [], []
@@ -268,9 +268,11 @@ class Newsletter:
         - 'post_frequency' (float): Updated average post frequency in days.
         """
         
-        # Fetch latest RSS items
-        # items, post_dates_list = getLatestRSSItems(self.url, lastBuildDate) # Maybe use RSS instead?
-        items, post_dates_list = self.getLatestPosts(lastBuildDate)
+        # Fetch latest RSS items. Tru based on API. If API fails, use RSS Feed.
+        try:
+            items, post_dates_list = self.getLatestPosts(lastBuildDate)
+        except Exception:
+            items, post_dates_list = getLatestRSSItems(self.url, lastBuildDate)
         
         # Call getPostFreqDetails
         post_freq_details = getPostFreqDetails(
