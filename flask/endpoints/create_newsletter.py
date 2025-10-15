@@ -1,7 +1,7 @@
 import os
 import json
 import time
-from flask import request, Response
+from flask import request, Response, stream_with_context
 
 from utils.user import User
 from utils.newsletter import Newsletter
@@ -163,4 +163,8 @@ def create_newsletter_route():
             firebase.log_failed_task(payload, "/createNewsletter", str(e))
             yield f"data: {json.dumps({'state': 'error', 'message': f'Internal server error: {str(e)}'})}\n\n"
 
-    return Response(generate(), mimetype='text/stream')
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache"}
+    )
