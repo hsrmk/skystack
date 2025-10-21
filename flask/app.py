@@ -5,7 +5,7 @@ from endpoints.create_newsletter import create_newsletter_route
 from endpoints.build_newsletter import build_newsletter_route
 from endpoints.newsletter_build_check import newsletter_build_check_route
 from endpoints.create_dormant_newsletter import create_dormant_newsletter_route
-from endpoints.follow_users import follow_users_route
+from endpoints.follow_user import follow_user_route
 from endpoints.add_older_posts import add_older_posts_route
 from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_route
 
@@ -35,9 +35,9 @@ def newsletter_build_check_route_wrapper():
 def create_dormant_newsletter_route_wrapper():
     return create_dormant_newsletter_route()
 
-@app.route('/followUsers', methods=['POST'])
+@app.route('/followUser', methods=['POST'])
 def follow_users_route_wrapper():
-    return follow_users_route()
+    return follow_user_route()
 
 @app.route('/addOlderPosts', methods=['POST'])
 def add_older_posts_route_wrapper():

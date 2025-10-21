@@ -247,7 +247,7 @@ class FirebaseClient:
             "/newsletterBuildCheck": 3,
             "/createDormantNewsletter": 4,
             "/addNewsletterUserGraph": 5,
-            "/followUsers": 6,
+            "/followUser": 6,
             "/addOlderPosts": 7,
             "/activateDormantNewsletter": 8
         }

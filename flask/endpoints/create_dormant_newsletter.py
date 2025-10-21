@@ -46,7 +46,6 @@ def create_dormant_newsletter_route():
         newsletter_handle = publication['subdomain'] + PDS_USERNAME_EXTENSION
 
         if firebase.checkIfNewsletterExists(subdomain):
-            parentNewsletterFollowsRecommendedNewsletters(parent_newsletter_subdomain, newsletter_handle)
             return {
                 "status": "success",
                 "message": f"Newsletter already built."
@@ -99,9 +98,6 @@ def create_dormant_newsletter_route():
             isDormant
         )
 
-        # Parent newsletter follows this newsletter
-        parentNewsletterFollowsRecommendedNewsletters(parent_newsletter_subdomain, newsletter_handle)
-
         # 11. create_cloud_task for /addNewsletterUserGraph
         cloud_run_endpoint = os.environ.get("CLOUD_RUN_ENDPOINT")
         if not cloud_run_endpoint:
@@ -133,7 +129,10 @@ def create_dormant_newsletter_route():
             delete_account(subdomain)
             firebase.deleteNewsletter(subdomain)
         
-        payload =  json.dumps(request.get_json())
+        data = request.get_json()
+        data['deleted_subdomain'] = subdomain
+        
+        payload = json.dumps(data)
         firebase.log_failed_task(payload, "/createDormantNewsletter", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500 
 

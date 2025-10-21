@@ -87,27 +87,42 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
             "create_dormant_newsletters": []
         }
 
-    endpoint = cloud_run_endpoint.rstrip('/') + '/createDormantNewsletter'
+    create_dormant_newsletter_endpoint = cloud_run_endpoint.rstrip('/') + '/createDormantNewsletter'
+    follow_user_endpoint = cloud_run_endpoint.rstrip('/') + '/followUser'
 
     task_responses = []
     for index, newsletter_subdomain in enumerate(recommended_newsletters_subdomains, start=1):
         recommended_newsletter_url = SUBSTACK_NEWSLETTER_URL.format(subdomain=newsletter_subdomain)
-        task_payload = {
+        create_dormant_newsletter_task_payload = {
             "url": recommended_newsletter_url,
             "parent_newsletter_subdomain": subdomain
         }
 
-        task_response = create_cloud_task(
-            endpoint,
-            task_payload,
+        create_dormant_newsletter_task_response = create_cloud_task(
+            create_dormant_newsletter_endpoint,
+            create_dormant_newsletter_task_payload,
             os.environ.get('CLOUD_TASKS_REC_NEWSLETTER_PROCESSING_QUEUE', 'default'),
             f"create_dormant_newsletter_{newsletter_subdomain}_{subdomain}_{int(time.time())}",
             delay_seconds=index * 30
         )
+
+        follow_user_task_payload = {
+            "user": subdomain,
+            "to_follow_subdomain": newsletter_subdomain
+        }
+        follow_user_task_response = create_cloud_task(
+            follow_user_endpoint,
+            follow_user_task_payload,
+            os.environ.get('CLOUD_TASKS_OLD_POSTS_IMPORT_QUEUE', 'default'),
+            f"follow_user_{subdomain}_follows_{newsletter_subdomain}_{int(time.time())}",
+            delay_seconds=index * 1800
+        )
+
         task_responses.append({
             "subdomain": newsletter_subdomain,
             "index": index,
-            **(task_response or {"status": "error", "message": "Unknown error creating task"})
+            **(create_dormant_newsletter_task_response or {"status": "error", "message": "Unknown error creatin create_dormant_newsletter task"})
+            **(follow_user_task_response or {"status": "error", "message": "Unknown error creatin follow_user task"})
         })
 
     return {

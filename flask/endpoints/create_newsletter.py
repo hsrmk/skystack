@@ -132,7 +132,7 @@ def create_newsletter_route():
                 task_name=f"add_user_graph_{subdomain}_{int(time.time())}"
             )
 
-            # Step 9: Importing Substack Recommendation Graph
+            # Step 9: Importing Old Posts
             yield f"data: {json.dumps({'state': 'step_completed', 'message': 'Older Posts', 'submessage': 'Setting up imports for old posts in the background...'})}\n\n"
 
             add_old_posts_endpoint = cloud_run_endpoint.rstrip('/') + '/addOlderPosts'
