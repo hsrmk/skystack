@@ -121,8 +121,8 @@ def create_dormant_newsletters_for_newsletter(subdomain, recommended_newsletters
         task_responses.append({
             "subdomain": newsletter_subdomain,
             "index": index,
-            **(create_dormant_newsletter_task_response or {"status": "error", "message": "Unknown error creatin create_dormant_newsletter task"})
-            **(follow_user_task_response or {"status": "error", "message": "Unknown error creatin follow_user task"})
+            **(create_dormant_newsletter_task_response or {"status": "error", "message": "Unknown error creatin create_dormant_newsletter task"}),
+            **(follow_user_task_response or {"status": "error", "message": "Unknown error creatin follow_user task"}),
         })
 
     return {
