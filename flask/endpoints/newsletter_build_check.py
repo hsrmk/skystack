@@ -34,6 +34,7 @@ def newsletter_build_check_route():
         
         # Create cloud tasks for each newsletter that needs to be built
         tasks_created = 0
+        failed_tasks = 0
         failed_tasks = []
         
         for newsletter in newsletters_to_build:
@@ -53,6 +54,7 @@ def newsletter_build_check_route():
                     tasks_created += 1
                     print(f"Created cloud task for newsletter: {newsletter['sub_domain']}")
                 else:
+                    failed_tasks += 1
                     failed_tasks.append({
                         "subdomain": newsletter['sub_domain'],
                         "error": task_result["message"]
@@ -60,6 +62,7 @@ def newsletter_build_check_route():
                     print(f"Failed to create cloud task for newsletter: {newsletter['sub_domain']} - {task_result['message']}")
                     
             except Exception as e:
+                failed_tasks += 1
                 failed_tasks.append({
                     "subdomain": newsletter['sub_domain'],
                     "error": str(e)
@@ -68,7 +71,7 @@ def newsletter_build_check_route():
         
         return {
             "status": "success",
-            "message": f"Newsletter build check completed. {tasks_created} tasks created.",
+            "message": f"Newsletter build check completed. Out of {len(newsletters_to_build)}. {tasks_created} tasks created. {failed_tasks} tasks failed.",
             "newsletters_checked": len(newsletters_to_build),
             "tasks_created": tasks_created,
             "failed_tasks": failed_tasks
@@ -77,4 +80,4 @@ def newsletter_build_check_route():
     except Exception as e:
         payload =  json.dumps(request.get_json())
         firebase.log_failed_task(payload, "/newsletterBuildCheck", str(e))
-        return {"error": f"Internal server error: {str(e)}"}, 500 
+        return {"error": f"Internal server error", "message": str(e)}, 500 
