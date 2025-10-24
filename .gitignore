@@ -175,6 +175,8 @@ cython_debug/
 .cursorignore
 .gitignore
 
-firebase.json
+flask/firebase.json
 
 flask/utils/extras
+
+.firebaserc

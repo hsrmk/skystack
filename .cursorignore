@@ -1,4 +1,5 @@
-firebase.json
+flask/firebase.json
 utils/extras
 node_modules
 .next
+.firebaserc
