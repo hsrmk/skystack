@@ -46,9 +46,25 @@ class AtprotoUser:
         else:
             avatar_blob = None
 
+        # Ensure combined string is ≤256 chars. If too long, trim description.
+        description_str = (
+            description + "\n\n\n" +
+            "This is an automated Substack Account of " + self.url + "\n" +
+            "Discover more/Create at: @skystack.xyz"
+        )
+        if len(description_str) > 256:
+            base_str = (
+                "\n\n\n" +
+                "This is an automated Substack Account of " + self.url + "\n" +
+                "Discover more/Create at: @skystack.xyz"
+            )
+            avail_len = 256 - len(base_str) - 3  # 3 for the ellipsis
+            trimmed_description = (description[:avail_len] + '...') if avail_len > 0 else '...'
+            description_str = trimmed_description + base_str
+
         profile_record = models.AppBskyActorProfile.Record(
             display_name=display_name,
-            description=description + " \n\n\n" + "This is an automated Substack Account of " + self.url + "\n" + "Discover more/Create at: @skystack.xyz",
+            description=description_str,
             avatar=avatar_blob,
         )
         # Update the profile using the profile record namespace
