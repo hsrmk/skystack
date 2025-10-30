@@ -74,7 +74,7 @@ export default function MirrorNewsletterDialog({
 					</Box>
 				</div>
 				{/* <PulseDot state="error" size="sm" /> */}
-				<ProcessingSubstack />
+				<ProcessingSubstack url={url} />
 			</DialogContent>
 		</Dialog>
 	);

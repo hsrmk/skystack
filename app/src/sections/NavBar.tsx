@@ -70,7 +70,7 @@ export default function NavBar() {
 
 				{/* Right: Button (Desktop only) */}
 				<div className="hidden lg:flex">
-					<LoginButton className="px-4 py-2" />
+					{/* <LoginButton className="px-4 py-2" /> */}
 				</div>
 
 				{/* Hamburger (Mobile only) */}
@@ -97,7 +97,7 @@ export default function NavBar() {
 					className={`flex flex-col gap-2 mt-6 transition-all duration-500 ${menuOpen ? "opacity-100 blur-0" : "opacity-0 blur-sm pointer-events-none"}`}
 				>
 					<NavLinks />
-					<LoginButton className="px-5 py-2 my-2 max-w-fit" />
+					{/* <LoginButton className="px-5 py-2 my-2 max-w-fit" /> */}
 				</div>
 			</div>
 		</Box>

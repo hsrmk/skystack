@@ -29,7 +29,7 @@ export default function RootLayout({
 				<meta name="color-scheme" content="dark light" />
 			</head>
 			<body
-				className={`${inter.variable} antialiased bg-black text-white`}
+				className={`${inter.variable} antialiased bg-black text-white overflow-x-hidden`}
 			>
 				<NavBar />
 				{children}

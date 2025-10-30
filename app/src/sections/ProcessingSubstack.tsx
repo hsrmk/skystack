@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import PulseDot from "@/components/PulseDot";
 import { AccountCard } from "@/components/AccountCard";
 
+interface ProcessingSubstackProps {
+	url: string;
+}
+
 // Types for event
 interface EventItem {
 	state: "step_completed" | "in_progress" | "error" | "finished";
@@ -16,83 +20,88 @@ interface EventItem {
 	skystackUrl?: string;
 }
 
-// Dummy event stream simulation
-type DummyEvent = Omit<
-	EventItem,
-	| "profilePicImage"
-	| "name"
-	| "username"
-	| "description"
-	| "substackUrl"
-	| "skystackUrl"
-> &
-	Partial<EventItem>;
+// Removed dummyEvents and simulation interval logic
 
-const dummyEvents: DummyEvent[] = [
-	{
-		state: "step_completed",
-		message: "Started",
-		submessage: "Started processing...",
-	},
-	{
-		state: "step_completed",
-		message: "Fetching newsletter data",
-		submessage: "Contacting Substack API...",
-	},
-	{
-		state: "step_completed",
-		message: "Parsing content",
-		submessage: "Extracting articles...",
-	},
-	// {
-	// 	state: "error",
-	// 	message: "Building newsletter",
-	// 	submessage: "Formatting for Bluesky...",
-	// },
-	{
-		state: "finished",
-		message: "Newsletter mirrored!",
-		// AccountCard props below
-		profilePicImage: "/skystack-logo.png",
-		name: "Jane Doe",
-		username: "janedoe",
-		description: "Writes about tech and society.",
-		substackUrl: "https://janedoe.substack.com",
-		skystackUrl: "https://bsky.app/profile/janedoe.bsky.social",
-	},
-];
-
-export default function ProcessingSubstack() {
+export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
 	const [events, setEvents] = useState<EventItem[]>([]);
-	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	console.log("Processing Substack rendering, events count:", events.length);
-
-	// Simulate streaming events
 	useEffect(() => {
-		console.log("Setting up event stream...");
-		intervalRef.current = setInterval(() => {
-			setEvents((prev) => {
-				const nextIdx = prev.length;
-				if (nextIdx < dummyEvents.length) {
-					const newEvent = dummyEvents[nextIdx];
-					console.log("Prev:", prev);
-					console.log("New:", [...prev, newEvent]);
-					return [...prev, newEvent];
-				} else {
-					if (intervalRef.current) {
-						console.log("Event stream finished");
-						clearInterval(intervalRef.current);
+		let cancelled = false;
+		abortControllerRef.current?.abort(); // Clean up previous instance if any
+		abortControllerRef.current = new AbortController();
+		setEvents([]);
+
+		async function connectSSE() {
+			try {
+				const response = await fetch(
+					"https://skystack-apis-937189978209.us-central1.run.app/createNewsletter",
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({ url }),
+						signal: abortControllerRef.current!.signal,
 					}
-					return prev; // no change
+				);
+				if (!response.body || !response.ok)
+					throw new Error("No response body");
+
+				const reader = response.body.getReader();
+				let buffer = "";
+				while (!cancelled) {
+					const { value, done } = await reader.read();
+					if (done) break;
+					buffer += new TextDecoder().decode(value, { stream: true });
+					while (true) {
+						const eventEnd = buffer.indexOf("\n\n");
+						if (eventEnd === -1) break;
+						const eventRaw = buffer.slice(0, eventEnd).trim();
+						buffer = buffer.slice(eventEnd + 2);
+						for (const line of eventRaw.split("\n")) {
+							if (line.startsWith("data: ")) {
+								try {
+									const parsed = JSON.parse(
+										line.replace("data: ", "")
+									);
+									// Defensive: check shape
+									if (
+										parsed &&
+										parsed.state &&
+										parsed.message
+									) {
+										setEvents((prev) => [...prev, parsed]);
+									}
+								} catch {}
+							}
+						}
+					}
 				}
-			});
-		}, 2000);
+			} catch (err) {
+				if (!cancelled) {
+					setEvents((prev) => [
+						...prev,
+						{
+							state: "error",
+							message: "Failed to connect to Skystack.",
+							submessage:
+								err instanceof Error
+									? err.message
+									: "Unknown error",
+						},
+					]);
+				}
+			}
+		}
+
+		connectSSE();
 		return () => {
-			if (intervalRef.current) clearInterval(intervalRef.current);
+			cancelled = true;
+			abortControllerRef.current?.abort();
 		};
-	}, []);
+	}, [url]);
 
 	// Scroll to bottom on new event
 	useEffect(() => {

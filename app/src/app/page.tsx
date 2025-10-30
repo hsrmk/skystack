@@ -27,7 +27,8 @@ export default function Home() {
 		const fetchAndMergeData = async () => {
 			try {
 				const response = await fetch(
-					"https://gist.githubusercontent.com/hsrmk/1027b77ed539bb5296bc2154445687d3/raw/76ae2aa53a2a0f9910a6e79a9535a64672f5b627/skystack_mock_data.json"
+					// "https://storage.googleapis.com/vibrant-victory-469112-d7.firebasestorage.app/static/newsletters.json"
+					"https://firebasestorage.googleapis.com/v0/b/vibrant-victory-469112-d7.firebasestorage.app/o/static%2Fnewsletters.json?alt=media"
 				);
 				const remoteData: AccountData[] = await response.json();
 
@@ -47,6 +48,7 @@ export default function Home() {
 					...filteredRemoteData,
 				];
 
+				console.log(merged);
 				setMergedData(merged);
 			} catch (error) {
 				console.error("Error fetching data:", error);
@@ -57,6 +59,7 @@ export default function Home() {
 			}
 		};
 
+		console.log("Fetching and merging..");
 		fetchAndMergeData();
 	}, []);
 
