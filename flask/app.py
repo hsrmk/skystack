@@ -1,5 +1,6 @@
-from flask import Flask, request, Response, stream_with_context
 import os
+from flask_cors import CORS
+from flask import Flask
 from endpoints.add_newsletter_user_graph import add_newsletter_user_graph_route
 from endpoints.create_newsletter import create_newsletter_route
 from endpoints.build_newsletter import build_newsletter_route
@@ -10,6 +11,7 @@ from endpoints.add_older_posts import add_older_posts_route
 from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_route
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/')
 def hello_world():
