@@ -8,10 +8,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 1,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/0d19fbdb-8fd3-4700-a0b4-49196e201327_1280x1280.png",
-		name: "Age of Invention, by Anton Howes",
-		substackUrl: "https://www.ageofinvention.xyz",
-		skystackUrl: "https://bsky.app/profile/antonhowes.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/f001ad4d-db0c-469b-bdb0-c47c1d76e400_1280x1280.png",
+		name: "Can't Get Much Higher",
+		substackUrl: "https://www.cantgetmuchhigher.com",
+		skystackUrl: "https://bsky.app/profile/chrisdallariva.skystack.xyz",
 	},
 	{
 		id: 2,
@@ -22,10 +22,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 3,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/430241cb-ade5-4316-b1c9-6e3fe6e63e5e_256x256.png",
-		name: "Astral Codex Ten",
-		substackUrl: "https://www.astralcodexten.com",
-		skystackUrl: "https://bsky.app/profile/astralcodexten.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/b625db03-808d-4735-8059-601fac8d38ec_333x333.png",
+		name: "Both Are True",
+		substackUrl: "https://botharetrue.substack.com",
+		skystackUrl: "https://bsky.app/profile/botharetrue.skystack.xyz",
 	},
 	{
 		id: 4,
@@ -43,10 +43,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 6,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/b625db03-808d-4735-8059-601fac8d38ec_333x333.png",
-		name: "Both Are True",
-		substackUrl: "https://botharetrue.substack.com",
-		skystackUrl: "https://bsky.app/profile/botharetrue.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/430241cb-ade5-4316-b1c9-6e3fe6e63e5e_256x256.png",
+		name: "Astral Codex Ten",
+		substackUrl: "https://www.astralcodexten.com",
+		skystackUrl: "https://bsky.app/profile/astralcodexten.skystack.xyz",
 	},
 	{
 		id: 7,
@@ -71,10 +71,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 10,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/f001ad4d-db0c-469b-bdb0-c47c1d76e400_1280x1280.png",
-		name: "Can't Get Much Higher",
-		substackUrl: "https://www.cantgetmuchhigher.com",
-		skystackUrl: "https://bsky.app/profile/chrisdallariva.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/0d19fbdb-8fd3-4700-a0b4-49196e201327_1280x1280.png",
+		name: "Age of Invention, by Anton Howes",
+		substackUrl: "https://www.ageofinvention.xyz",
+		skystackUrl: "https://bsky.app/profile/antonhowes.skystack.xyz",
 	},
 	{
 		id: 11,
@@ -214,17 +214,18 @@ export const gridLayoutData = [
 	},
 	{
 		id: 30,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/d2c64a64-deeb-4e65-95e4-d10bb2fd3428_1080x1080.png",
-		name: "Last Week's New Yorker Review",
-		substackUrl: "https://lastweeksnewyorker.substack.com",
-		skystackUrl: "https://bsky.app/profile/lastweeksnewyorker.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/931a73ea-4c81-42fc-978e-56c8901127e2_833x833.png",
+		name: "The Roots of Progress",
+		substackUrl: "https://newsletter.rootsofprogress.org",
+		skystackUrl: "https://bsky.app/profile/rootsofprogress.skystack.xyz",
 	},
 	{
 		id: 31,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/66ab840d-cdb3-4f65-828d-4ef7fdc8f11f_256x256.png",
-		name: "Marketing BS with Edward Nevraumont",
-		substackUrl: "https://marketingbs.substack.com",
-		skystackUrl: "https://bsky.app/profile/marketingbs.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/c92decb6-7c5c-4053-bc05-651e5548e9b3_1280x1280.png",
+		name: "Uncharted Territories",
+		substackUrl: "https://unchartedterritories.tomaspueyo.com",
+		skystackUrl:
+			"https://bsky.app/profile/unchartedterritories.skystack.xyz",
 	},
 	{
 		id: 32,
@@ -319,10 +320,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 45,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://substack-post-media.s3.amazonaws.com/public/images/931a73ea-4c81-42fc-978e-56c8901127e2_833x833.png",
-		name: "The Roots of Progress",
-		substackUrl: "https://newsletter.rootsofprogress.org",
-		skystackUrl: "https://bsky.app/profile/rootsofprogress.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/d2c64a64-deeb-4e65-95e4-d10bb2fd3428_1080x1080.png",
+		name: "Last Week's New Yorker Review",
+		substackUrl: "https://lastweeksnewyorker.substack.com",
+		skystackUrl: "https://bsky.app/profile/lastweeksnewyorker.skystack.xyz",
 	},
 	{
 		id: 46,
@@ -404,11 +405,10 @@ export const gridLayoutData = [
 	},
 	{
 		id: 57,
-		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/c92decb6-7c5c-4053-bc05-651e5548e9b3_1280x1280.png",
-		name: "Uncharted Territories",
-		substackUrl: "https://unchartedterritories.tomaspueyo.com",
-		skystackUrl:
-			"https://bsky.app/profile/unchartedterritories.skystack.xyz",
+		src: "https://substackcdn.com/image/fetch/$s_!cSXI!,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_center/https://bucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com/public/images/66ab840d-cdb3-4f65-828d-4ef7fdc8f11f_256x256.png",
+		name: "Marketing BS with Edward Nevraumont",
+		substackUrl: "https://marketingbs.substack.com",
+		skystackUrl: "https://bsky.app/profile/marketingbs.skystack.xyz",
 	},
 	{
 		id: 58,
