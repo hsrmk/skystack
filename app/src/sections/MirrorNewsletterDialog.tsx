@@ -15,16 +15,27 @@ import DottedBorder from "@/components/DottedBorder";
 // import PulseDot from "@/components/PulseDot";
 import ProcessingSubstack from "@/sections/ProcessingSubstack";
 
+interface AccountData {
+	profilePicImage: string;
+	name: string;
+	username: string;
+	description: string;
+	substackUrl: string;
+	skystackUrl: string;
+}
+
 interface MirrorNewsletterDialogProps {
 	url: string;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	onRefresh?: (account: AccountData) => void;
 }
 
 export default function MirrorNewsletterDialog({
 	url,
 	open,
 	onOpenChange,
+	onRefresh,
 }: MirrorNewsletterDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,7 +85,7 @@ export default function MirrorNewsletterDialog({
 					</Box>
 				</div>
 				{/* <PulseDot state="error" size="sm" /> */}
-				<ProcessingSubstack url={url} />
+				<ProcessingSubstack url={url} onFinish={onRefresh} />
 			</DialogContent>
 		</Dialog>
 	);

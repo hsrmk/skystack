@@ -2,8 +2,18 @@ import React, { useEffect, useRef, useState } from "react";
 import PulseDot from "@/components/PulseDot";
 import { AccountCard } from "@/components/AccountCard";
 
+interface FinishedAccountData {
+	profilePicImage: string;
+	name: string;
+	username: string;
+	description: string;
+	substackUrl: string;
+	skystackUrl: string;
+}
+
 interface ProcessingSubstackProps {
 	url: string;
+	onFinish?: (account: FinishedAccountData) => void;
 }
 
 // Types for event
@@ -20,12 +30,14 @@ interface EventItem {
 	skystackUrl?: string;
 }
 
-// Removed dummyEvents and simulation interval logic
-
-export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
+export default function ProcessingSubstack({
+	url,
+	onFinish,
+}: ProcessingSubstackProps) {
 	const [events, setEvents] = useState<EventItem[]>([]);
 	const abortControllerRef = useRef<AbortController | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const finishedCalledRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -35,6 +47,18 @@ export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
 
 		async function connectSSE() {
 			try {
+				// Clean the URL to keep only the base URL (protocol + domain)
+				function getBaseUrl(inputUrl: string): string {
+					try {
+						const parsed = new URL(inputUrl);
+						return `${parsed.protocol}//${parsed.host}`;
+					} catch {
+						// fallback: return as-is if invalid
+						return inputUrl;
+					}
+				}
+				const cleanedUrl = getBaseUrl(url);
+
 				const response = await fetch(
 					"https://skystack-apis-937189978209.us-central1.run.app/createNewsletter",
 					{
@@ -42,7 +66,7 @@ export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
 						headers: {
 							"Content-Type": "application/json",
 						},
-						body: JSON.stringify({ url }),
+						body: JSON.stringify({ url: cleanedUrl }),
 						signal: abortControllerRef.current!.signal,
 					}
 				);
@@ -73,6 +97,31 @@ export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
 										parsed.message
 									) {
 										setEvents((prev) => [...prev, parsed]);
+										if (
+											parsed.state === "finished" &&
+											!finishedCalledRef.current
+										) {
+											finishedCalledRef.current = true;
+											const finishedData: FinishedAccountData =
+												{
+													profilePicImage:
+														parsed.profilePicImage ||
+														"",
+													name: parsed.name || "",
+													username:
+														parsed.username || "",
+													description:
+														parsed.description ||
+														"",
+													substackUrl:
+														parsed.substackUrl ||
+														"",
+													skystackUrl:
+														parsed.skystackUrl ||
+														"",
+												};
+											onFinish?.(finishedData);
+										}
 									}
 								} catch {}
 							}
@@ -113,7 +162,7 @@ export default function ProcessingSubstack({ url }: ProcessingSubstackProps) {
 	return (
 		<div
 			ref={containerRef}
-			className="h-64 overflow-y-auto pr-2 scrollbar-hide p-4"
+			className="h-72 overflow-y-auto pr-2 scrollbar-hide p-4"
 			style={{ scrollbarWidth: "none" }}
 		>
 			{events.length === 0 && (

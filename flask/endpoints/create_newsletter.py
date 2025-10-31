@@ -9,6 +9,7 @@ from utils.admin import create_account, delete_account
 from utils.atproto_user import AtprotoUser
 from utils.firebase import FirebaseClient
 from utils.create_cloud_task import create_cloud_task
+from utils.endpoints import PDS_USERNAME_EXTENSION
 
 def create_newsletter_route():
     """
@@ -48,7 +49,7 @@ def create_newsletter_route():
             
             subdomain = publication['subdomain']
             if firebase.checkIfNewsletterExists(subdomain):
-                yield f"data: {json.dumps({'state': 'finished', 'message': 'Newsletter is already available to follow!', 'profilePicImage': publication['logo_url'], 'name': publication['name'], 'username': subdomain, 'description': publication['hero_text'], 'substackUrl': url, 'skystackUrl': f'https://bsky.app/profile/{subdomain}.bsky.social', 'submessage': 'Newsletter already exists, returning with already available data'})}\n\n"
+                yield f"data: {json.dumps({'state': 'finished', 'message': 'Newsletter is already available to follow!', 'profilePicImage': publication['logo_url'], 'name': publication['name'], 'username': subdomain, 'description': publication['hero_text'], 'substackUrl': url, 'skystackUrl': f'https://bsky.app/profile/{subdomain}{PDS_USERNAME_EXTENSION}', 'submessage': 'Newsletter already exists, returning with already available data'})}\n\n"
                 return
 
             # Step 4: Creating Bluesky account
@@ -150,7 +151,7 @@ def create_newsletter_route():
             )
 
             # Final success response
-            yield f"data: {json.dumps({'state': 'finished', 'message': 'Newsletter is now available to follow!', 'profilePicImage': publication['logo_url'], 'name': publication['name'], 'username': subdomain, 'description': publication['hero_text'], 'substackUrl': url, 'skystackUrl': f'https://bsky.app/profile/{subdomain}.bsky.social', 'submessage': 'Newsletter built from scratch', 'posts_added': posts_added, 'cloud_tasks': {'user_graph': str(add_graph_response), 'older_posts': str(old_posts_response)}})}\n\n"
+            yield f"data: {json.dumps({'state': 'finished', 'message': 'Newsletter is now available to follow!', 'profilePicImage': publication['logo_url'], 'name': publication['name'], 'username': subdomain, 'description': publication['hero_text'], 'substackUrl': url, 'skystackUrl': f'https://bsky.app/profile/{subdomain}{PDS_USERNAME_EXTENSION}', 'submessage': 'Newsletter built from scratch', 'posts_added': posts_added, 'cloud_tasks': {'user_graph': str(add_graph_response), 'older_posts': str(old_posts_response)}})}\n\n"
             
         except Exception as e:
             if subdomain:

@@ -34,7 +34,7 @@ export function AccountCard({
 						alt={`${name}'s profile picture`}
 						width={40}
 						height={40}
-						className="rounded-full object-cover"
+						className="rounded-full object-cover bg-white"
 					/>
 				</div>
 

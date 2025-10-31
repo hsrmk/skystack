@@ -36,7 +36,7 @@ export default function ImageWithTooltip({
 						alt={name}
 						height={height}
 						width={width}
-						className="rounded"
+						className="rounded-[20px] object-cover"
 					/>
 				</span>
 			</TooltipTrigger>

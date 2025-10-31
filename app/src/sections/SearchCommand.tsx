@@ -26,6 +26,7 @@ interface SearchCommandProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	accounts: AccountData[];
+	onRefresh?: (account: AccountData) => void; // <-- Add this
 }
 
 function isValidUrl(input: string) {
@@ -41,6 +42,7 @@ export default function SearchCommand({
 	open,
 	onOpenChange,
 	accounts,
+	onRefresh,
 }: SearchCommandProps) {
 	const [search, setSearch] = useState("");
 	const [mirrorDialogOpen, setMirrorDialogOpen] = useState(false);
@@ -88,7 +90,7 @@ export default function SearchCommand({
 											alt={acc.name}
 											width={32}
 											height={32}
-											className="rounded-full object-cover"
+											className="rounded-full object-cover bg-white"
 										/>
 										<div className="flex flex-col flex-1 min-w-0">
 											<span className="font-medium truncate">
@@ -150,6 +152,7 @@ export default function SearchCommand({
 				url={search}
 				open={mirrorDialogOpen}
 				onOpenChange={setMirrorDialogOpen}
+				onRefresh={onRefresh}
 			/>
 		</>
 	);
