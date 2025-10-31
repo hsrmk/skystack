@@ -18,7 +18,11 @@ export default function Footer() {
 				</div>
 			</div>
 			<div className="flex flex-row gap-6">
-				<a href="" target="_blank" rel="noopener noreferrer">
+				<a
+					href="http://bsky.app/profile/skystack.xyz"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
 					<Image
 						src="/bluesky.svg"
 						alt="Bluesky Skystack"

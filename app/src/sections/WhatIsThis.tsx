@@ -31,26 +31,16 @@ export default function WhatIsThis() {
 						1) What
 					</a>
 					<p className="w-full text-sm text-font-secondary md:max-w-[500px]">
-						Substacks are great, the Substack App is not. The app is
-						riddled with black box algorithms, and an overt focus on
-						writing written for the algorithm. Skystack helps you
-						follow Substack Newsletters on Bluesky.
+						Substacks are great, but the Substack App could be
+						better. The app relies heavily on algorithmic
+						recommendations that prioritize content designed for
+						recency and engagement.
 						<br />
 						<br />
-						On Bluesky, we can control what we want to see in our
-						timelines. I want to be able to follow my newsletters
-						across the fediverse, and not be stuck in some doom-loop
-						algorithm.
-						<br />
-						<br />
-						More so, most of the great substack writing is old, and
-						by relying on the latest hit pieces, we lose so much
-						good content that is never able to resurface.
-						<br />
-						<br />
-						With Bluesky’s Custom Feeds, we’re no longer limited to
-						the latest posts. We can build feeds that spotlight and
-						revive classic posts as well.
+						Bluesky gives you more control over your timeline. You
+						can follow accounts across the fediverse without being
+						limited to algorithm-driven feeds. Skystack helps you
+						follow Substack Newsletters on Bluesky!
 					</p>
 
 					<p
@@ -59,13 +49,23 @@ export default function WhatIsThis() {
 						Old Posts
 					</p>
 					<p className="w-full text-sm text-font-secondary md:max-w-[500px]">
-						Substack’s RSS caps out at 20 posts, leaving older work
-						stuck in the archives.
+						Substack’s RSS feeds only show the 20 most recent posts,
+						which means older content stays hidden in the archives.
 						<br /> <br />
-						Although there exists tools like Bridgy Fed, which help
-						port RSS Feeds to Bluesky, they too are limited by the
-						RSS limit. Skystack is able mirrors to Bluesky posts,
-						that are older than the ones listed in the RSS feed.
+						While tools like{" "}
+						<a
+							href="https://fed.brid.gy/"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-white underline"
+						>
+							Bridgy Fed
+						</a>{" "}
+						can help bring RSS feeds to Bluesky, they’re also
+						limited by this 20-post cap. Skystack goes further by
+						mirroring posts to Bluesky that are older than what
+						appears in the RSS feed, making more of a newsletter’s
+						archive accessible.
 					</p>
 
 					<p
@@ -74,10 +74,9 @@ export default function WhatIsThis() {
 						Social Graph
 					</p>
 					<p className="w-full text-sm text-font-secondary md:max-w-[500px]">
-						Substack has a rich social graph of newsletters. By
-						capturing that, we are able to allow a lot more
-						discovery on Bluesky, and hopefully help the writers
-						reach their 1000 True Fans.
+						Substack has a rich network of interconnected
+						newsletters. By capturing these connections, Skystack
+						helps you discover new newsletters on Bluesky too.
 					</p>
 				</div>
 			</div>
