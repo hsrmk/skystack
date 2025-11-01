@@ -40,117 +40,232 @@ export default function ProcessingSubstack({
 	const finishedCalledRef = useRef(false);
 
 	useEffect(() => {
+		// Constants
+		const API_ENDPOINT =
+			"https://skystack-apis-937189978209.us-central1.run.app/createNewsletter";
+		const MAX_RETRIES = 3;
+		const RETRY_DELAY_MS = 1000;
+
 		let cancelled = false;
-		abortControllerRef.current?.abort(); // Clean up previous instance if any
-		abortControllerRef.current = new AbortController();
+		abortControllerRef.current?.abort();
 		setEvents([]);
+		finishedCalledRef.current = false;
 
-		async function connectSSE() {
+		// Helper: Extract base URL from input
+		const getBaseUrl = (inputUrl: string): string => {
 			try {
-				// Clean the URL to keep only the base URL (protocol + domain)
-				function getBaseUrl(inputUrl: string): string {
-					try {
-						const parsed = new URL(inputUrl);
-						return `${parsed.protocol}//${parsed.host}`;
-					} catch {
-						// fallback: return as-is if invalid
-						return inputUrl;
-					}
+				const parsed = new URL(inputUrl);
+				return `${parsed.protocol}//${parsed.host}`;
+			} catch {
+				return inputUrl;
+			}
+		};
+
+		// Helper: Create newsletter API request
+		const createNewsletterRequest = async (
+			cleanedUrl: string,
+			signal: AbortSignal
+		): Promise<Response> => {
+			const response = await fetch(API_ENDPOINT, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ url: cleanedUrl }),
+				signal,
+			});
+
+			if (!response.body || !response.ok) {
+				throw new Error("No response body");
+			}
+
+			return response;
+		};
+
+		// Helper: Parse event from SSE data line
+		const parseEventLine = (line: string): EventItem | null => {
+			if (!line.startsWith("data: ")) return null;
+
+			try {
+				const parsed = JSON.parse(line.replace("data: ", ""));
+				if (parsed?.state && parsed?.message) {
+					return parsed as EventItem;
 				}
-				const cleanedUrl = getBaseUrl(url);
+			} catch {
+				// Invalid JSON, skip
+			}
 
-				const response = await fetch(
-					"https://skystack-apis-937189978209.us-central1.run.app/createNewsletter",
+			return null;
+		};
+
+		// Helper: Extract finished data from event
+		const extractFinishedData = (
+			event: EventItem
+		): FinishedAccountData => ({
+			profilePicImage: event.profilePicImage || "",
+			name: event.name || "",
+			username: event.username || "",
+			description: event.description || "",
+			substackUrl: event.substackUrl || "",
+			skystackUrl: event.skystackUrl || "",
+		});
+
+		// Helper: Handle event processing
+		// Returns: true = continue, false = error (retry), "finished" = success (stop)
+		const handleEvent = (
+			event: EventItem,
+			isLastRetry: boolean
+		): boolean | "finished" => {
+			// Handle stream errors
+			if (event.state === "error") {
+				if (isLastRetry) {
+					setEvents((prev) => [...prev, event]);
+				}
+				return false; // Signal failure
+			}
+
+			// Add event to state
+			setEvents((prev) => [...prev, event]);
+
+			// Handle finished state
+			if (event.state === "finished" && !finishedCalledRef.current) {
+				finishedCalledRef.current = true;
+				const finishedData = extractFinishedData(event);
+				onFinish?.(finishedData);
+				return "finished"; // Signal success - stop reading
+			}
+
+			return true; // Continue reading
+		};
+
+		// Helper: Handle connection errors
+		const handleConnectionError = (err: unknown, isLastRetry: boolean) => {
+			if (!cancelled && isLastRetry) {
+				setEvents((prev) => [
+					...prev,
 					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ url: cleanedUrl }),
-						signal: abortControllerRef.current!.signal,
-					}
-				);
-				if (!response.body || !response.ok)
-					throw new Error("No response body");
+						state: "error",
+						message: "Failed to connect to Skystack.",
+						submessage:
+							err instanceof Error
+								? err.message
+								: "Unknown error",
+					},
+				]);
+			}
+		};
 
-				const reader = response.body.getReader();
-				let buffer = "";
-				while (!cancelled) {
-					const { value, done } = await reader.read();
-					if (done) break;
-					buffer += new TextDecoder().decode(value, { stream: true });
-					while (true) {
-						const eventEnd = buffer.indexOf("\n\n");
-						if (eventEnd === -1) break;
-						const eventRaw = buffer.slice(0, eventEnd).trim();
-						buffer = buffer.slice(eventEnd + 2);
-						for (const line of eventRaw.split("\n")) {
-							if (line.startsWith("data: ")) {
-								try {
-									const parsed = JSON.parse(
-										line.replace("data: ", "")
-									);
-									// Defensive: check shape
-									if (
-										parsed &&
-										parsed.state &&
-										parsed.message
-									) {
-										setEvents((prev) => [...prev, parsed]);
-										if (
-											parsed.state === "finished" &&
-											!finishedCalledRef.current
-										) {
-											finishedCalledRef.current = true;
-											const finishedData: FinishedAccountData =
-												{
-													profilePicImage:
-														parsed.profilePicImage ||
-														"",
-													name: parsed.name || "",
-													username:
-														parsed.username || "",
-													description:
-														parsed.description ||
-														"",
-													substackUrl:
-														parsed.substackUrl ||
-														"",
-													skystackUrl:
-														parsed.skystackUrl ||
-														"",
-												};
-											onFinish?.(finishedData);
-										}
-									}
-								} catch {}
+		// Helper: Read and process event stream
+		const readEventStream = async (
+			reader: ReadableStreamDefaultReader<Uint8Array>,
+			isLastRetry: boolean
+		): Promise<boolean> => {
+			let buffer = "";
+			const decoder = new TextDecoder();
+
+			while (!cancelled) {
+				const { value, done } = await reader.read();
+				if (done) break;
+
+				buffer += decoder.decode(value, { stream: true });
+
+				// Process complete events (separated by \n\n)
+				while (true) {
+					const eventEnd = buffer.indexOf("\n\n");
+					if (eventEnd === -1) break;
+
+					const eventRaw = buffer.slice(0, eventEnd).trim();
+					buffer = buffer.slice(eventEnd + 2);
+
+					// Parse each line in the event
+					for (const line of eventRaw.split("\n")) {
+						const event = parseEventLine(line);
+						if (event) {
+							const result = handleEvent(event, isLastRetry);
+							if (result === false) {
+								return false; // Error - retry
 							}
+							if (result === "finished") {
+								return true; // Success - finished, stop reading
+							}
+							// result === true, continue reading
 						}
 					}
 				}
+			}
+
+			return true; // Success
+		};
+
+		// Main SSE connection function
+		const connectSSE = async (isLastRetry: boolean): Promise<boolean> => {
+			try {
+				const cleanedUrl = getBaseUrl(url);
+				const response = await createNewsletterRequest(
+					cleanedUrl,
+					abortControllerRef.current!.signal
+				);
+
+				const reader = response.body!.getReader();
+				return await readEventStream(reader, isLastRetry);
 			} catch (err) {
-				if (!cancelled) {
-					setEvents((prev) => [
-						...prev,
-						{
-							state: "error",
-							message: "Failed to connect to Skystack.",
-							submessage:
-								err instanceof Error
-									? err.message
-									: "Unknown error",
-						},
-					]);
+				handleConnectionError(err, isLastRetry);
+				return false;
+			}
+		};
+
+		// Retry wrapper
+		const waitBeforeRetry = (): Promise<void> => {
+			return new Promise((resolve) =>
+				setTimeout(resolve, RETRY_DELAY_MS)
+			);
+		};
+
+		// Retry logic
+		const connectWithRetry = async (): Promise<void> => {
+			let retryCount = 0;
+
+			while (retryCount < MAX_RETRIES && !cancelled) {
+				// If finished was already called, don't retry
+				if (finishedCalledRef.current) {
+					break;
+				}
+
+				// Create new AbortController for each attempt
+				abortControllerRef.current?.abort();
+				abortControllerRef.current = new AbortController();
+
+				// Clear events on retry attempts
+				if (retryCount > 0) {
+					setEvents([]);
+				}
+
+				const isLastRetry = retryCount === MAX_RETRIES - 1;
+				const success = await connectSSE(isLastRetry);
+
+				if (success) {
+					break; // Success, exit retry loop
+				}
+
+				// If finished was called during this attempt, don't retry
+				if (finishedCalledRef.current) {
+					break;
+				}
+
+				retryCount++;
+				if (retryCount < MAX_RETRIES && !cancelled) {
+					await waitBeforeRetry();
 				}
 			}
-		}
+		};
 
-		connectSSE();
+		connectWithRetry();
+
 		return () => {
 			cancelled = true;
 			abortControllerRef.current?.abort();
 		};
-	}, [url]);
+	}, [url, onFinish]);
 
 	// Scroll to bottom on new event
 	useEffect(() => {

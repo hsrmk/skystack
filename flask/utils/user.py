@@ -44,7 +44,7 @@ class User:
             'admin_handle': handle
         }
 
-    def extract_handle_from_url(url):
+    def extract_handle_from_url(self, url):
         parsed_url = urllib.parse.urlparse(url)
         netloc = parsed_url.netloc if parsed_url.netloc else parsed_url.path.split('/')[0]
         match = re.match(r'^([a-zA-Z0-9\-_.]+)\.substack\.com$', netloc)
