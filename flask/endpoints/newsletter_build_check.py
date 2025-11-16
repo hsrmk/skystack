@@ -32,12 +32,18 @@ def newsletter_build_check_route():
         
         build_endpoint = cloud_run_endpoint.rstrip('/') + '/buildNewsletter'
         
+        # Calculate spacing: CRON_JOB_INTERVAL, 180 minutes (10800 seconds) divided by number of newsletters
+        # This ensures tasks are evenly distributed over the CRON_JOB_INTERVAL window
+        CRON_JOB_INTERVAL = 180
+        total_window_seconds = CRON_JOB_INTERVAL * 60  # 180 minutes = 10800 seconds
+        spacing_seconds = total_window_seconds // len(newsletters_to_build) if len(newsletters_to_build) > 0 else 0
+        
         # Create cloud tasks for each newsletter that needs to be built
-        tasks_created = 0
-        failed_tasks = 0
+        created_tasks_count = 0
+        failed_tasks_count = 0
         failed_tasks = []
         
-        for newsletter in newsletters_to_build:
+        for index, newsletter in enumerate(newsletters_to_build):
             try:
                 # Prepare payload for build_newsletter endpoint
                 task_payload = {
@@ -47,14 +53,17 @@ def newsletter_build_check_route():
                     "subdomain": newsletter['sub_domain']
                 }
                 
-                # Create cloud task
-                task_result = create_cloud_task(build_endpoint, task_payload)
+                # Calculate delay_seconds: each task spaced by spacing_seconds
+                delay_seconds = index * spacing_seconds
+                
+                # Create cloud task with delay
+                task_result = create_cloud_task(build_endpoint, task_payload, delay_seconds=delay_seconds)
                 
                 if task_result["status"] == "success":
-                    tasks_created += 1
+                    created_tasks_count += 1
                     print(f"Created cloud task for newsletter: {newsletter['sub_domain']}")
                 else:
-                    failed_tasks += 1
+                    failed_tasks_count += 1
                     failed_tasks.append({
                         "subdomain": newsletter['sub_domain'],
                         "error": task_result["message"]
@@ -62,7 +71,7 @@ def newsletter_build_check_route():
                     print(f"Failed to create cloud task for newsletter: {newsletter['sub_domain']} - {task_result['message']}")
                     
             except Exception as e:
-                failed_tasks += 1
+                failed_tasks_count += 1
                 failed_tasks.append({
                     "subdomain": newsletter['sub_domain'],
                     "error": str(e)
@@ -71,9 +80,9 @@ def newsletter_build_check_route():
         
         return {
             "status": "success",
-            "message": f"Newsletter build check completed. Out of {len(newsletters_to_build)}. {tasks_created} tasks created. {failed_tasks} tasks failed.",
+            "message": f"Newsletter build check completed. Out of {len(newsletters_to_build)}. {created_tasks_count} tasks created. {failed_tasks_count} tasks failed.",
             "newsletters_checked": len(newsletters_to_build),
-            "tasks_created": tasks_created,
+            "tasks_created": created_tasks_count,
             "failed_tasks": failed_tasks
         }, 200
         

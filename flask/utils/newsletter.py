@@ -268,7 +268,7 @@ class Newsletter:
         - 'post_frequency' (float): Updated average post frequency in days.
         """
         
-        # Fetch latest RSS items. Tru based on API. If API fails, use RSS Feed.
+        # Fetch latest RSS items. Try based on API. If API fails, use RSS Feed.
         try:
             items, post_dates_list = self.getLatestPosts(lastBuildDate)
         except Exception:

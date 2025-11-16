@@ -42,25 +42,27 @@ def build_newsletter_route():
             postFrequency=postFrequency
         )
         
-        # Initialize AtprotoUser for creating posts
-        at_user = AtprotoUser(subdomain, url)
-        
-        # Create embedded link posts for each new post item
         posts_added = 0
-        for post_item in newsletter_data['post_items']:
-            try:
-                at_user.createEmbededLinkPost(
-                    post_item['title'],
-                    post_item['subtitle'],
-                    post_item['link'],
-                    post_item['thumbnail_url'],
-                    post_item['post_date'],
-                    post_item['labels']
-                )
-                print(f"Created post: {post_item['title']}")
-                posts_added += 1
-            except Exception as e:
-                print(f"Skipping post {post_item.get('link', 'unknown')} due to error: {e}")
+
+        # Only create embedded link posts if there are new post items
+        if newsletter_data['post_items'] and len(newsletter_data['post_items']) > 0:
+            # Initialize AtprotoUser for creating posts
+            at_user = AtprotoUser(subdomain, url)
+            
+            for post_item in newsletter_data['post_items']:
+                try:
+                    at_user.createEmbededLinkPost(
+                        post_item['title'],
+                        post_item['subtitle'],
+                        post_item['link'],
+                        post_item['thumbnail_url'],
+                        post_item['post_date'],
+                        post_item['labels']
+                    )
+                    print(f"Created post: {post_item['title']}")
+                    posts_added += 1
+                except Exception as e:
+                    print(f"Skipping post {post_item.get('link', 'unknown')} due to error: {e}")
         
         # Update last build details in Firebase
         firebase.updateLastBuildDetails(

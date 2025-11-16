@@ -1,6 +1,7 @@
 import os
-from flask_cors import CORS
 from flask import Flask
+from flask_cors import CORS
+
 from endpoints.add_newsletter_user_graph import add_newsletter_user_graph_route
 from endpoints.create_newsletter import create_newsletter_route
 from endpoints.build_newsletter import build_newsletter_route
@@ -9,6 +10,7 @@ from endpoints.create_dormant_newsletter import create_dormant_newsletter_route
 from endpoints.follow_user import follow_user_route
 from endpoints.add_older_posts import add_older_posts_route
 from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_route
+from endpoints.update_list import update_list_route
 
 app = Flask(__name__)
 CORS(app)
@@ -48,6 +50,10 @@ def add_older_posts_route_wrapper():
 @app.route('/activateDormantNewsletter', methods=['POST'])
 def activate_dormant_newsletter_route_wrapper():
     return activate_dormant_newsletter_route()
+
+@app.route('/updateList', methods=['POST'])
+def update_list_route_wrapper():
+    return update_list_route()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))

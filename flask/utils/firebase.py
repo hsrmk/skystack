@@ -1,7 +1,11 @@
 import os
+import requests
+import datetime
+
 import firebase_admin
 from firebase_admin import credentials, firestore
-import datetime
+
+from utils.endpoints import ALL_NEWSLETTERS_STATIC_JSON
 
 class FirebaseClient:
     def __init__(self):
@@ -31,7 +35,23 @@ class FirebaseClient:
         :param data: dict
         """
         doc_ref = self.db.collection(collection_name).document(document_id)
-        doc_ref.set(data)
+        return doc_ref.set(data)
+
+    def createCategories(self, id, name, description, list_url):
+        """
+        Creates or overwrites a category document in the 'categories' collection.
+        :param id: str (used as document_id)
+        :param name: str
+        :param description: str
+        :param list_url: str
+        :return: Firestore write result from add_to_collection
+        """
+        data = {
+            "name": name,
+            "description": description,
+            "list_url": list_url
+        }
+        return self.add_to_collection("categories", id, data)
 
     def createNewsletter(self, publication_id, name, sub_domain, custom_domain, hero_text, logo_url, lastBuildDate, postFrequency, numberOfPostsAdded, oldestPostDate, isDormant = False):
         """
@@ -214,6 +234,39 @@ class FirebaseClient:
         data = doc.to_dict() or {}
         return data.get("oldestPostDate")
 
+    def getAllNewsletterUsernames(self):
+        """
+        Fetches newsletter data from a static JSON URL and returns usernames.
+        :return: list of str (usernames)
+        """
+        url = ALL_NEWSLETTERS_STATIC_JSON
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            newsletters = response.json()
+            if isinstance(newsletters, list):
+                return [item.get("username") for item in newsletters if item.get("username")]
+            return []
+        except Exception as e:
+            return []
+
+    def getCategories(self):
+        """
+        Returns all documents from the 'categories' collection as a list of
+        dictionaries containing only 'name' and 'list_url'.
+        :return: list of dict
+        """
+        collection_ref = self.db.collection("categories")
+        categories = []
+        for doc in collection_ref.stream():
+            data = doc.to_dict() or {}
+            categories.append({
+                "id": doc.id,
+                "name": data.get("name"),
+                "list_url": data.get("list_url"),
+            })
+        return categories
+
     def setDormantNewsletterActive(self, subdomain):
         """
         Sets the isDormant flag to False for a newsletter by subdomain.
@@ -249,7 +302,8 @@ class FirebaseClient:
             "/addNewsletterUserGraph": 5,
             "/followUser": 6,
             "/addOlderPosts": 7,
-            "/activateDormantNewsletter": 8
+            "/updateList": 8,
+            "/activateDormantNewsletter": 9
         }
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         priority = endpoint_priority_map.get(endpoint, 5)
