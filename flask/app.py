@@ -11,6 +11,7 @@ from endpoints.follow_user import follow_user_route
 from endpoints.add_older_posts import add_older_posts_route
 from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_route
 from endpoints.update_list import update_list_route
+from endpoints.update_all_lists import update_all_lists_route
 
 app = Flask(__name__)
 CORS(app)
@@ -54,6 +55,10 @@ def activate_dormant_newsletter_route_wrapper():
 @app.route('/updateList', methods=['POST'])
 def update_list_route_wrapper():
     return update_list_route()
+
+@app.route('/updateAllLists', methods=['POST'])
+def update_all_lists_route_wrapper():
+    return update_all_lists_route()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
