@@ -10,23 +10,46 @@ from utils.endpoints import PDS_ENDPOINT, PDS_USERNAME_EXTENSION, OG_CARD_ENDPOI
 
 class AtprotoUser:
     """A class to manage a user's AT Protocol (Bluesky) account."""
-    def __init__(self, username, url):
+    def __init__(self, username, url, password=None, pds_type="custom"):
         """
         Initializes the Atproto client and logs in the user.
 
         Args:
-            username (str): The user's handle without the PDS extension.
+            username (str): The user's handle. For custom PDS, without the PDS extension.
+                           For bsky, the full handle (e.g., 'user.bsky.social').
+            url (str): The Substack URL associated with this account.
+            password (str, optional): The password for login. If None, falls back to
+                                     environment variable USER_LOGIN_PASS.
+            pds_type (str, optional): Type of PDS to use. Either "bsky" or "custom".
+                                     Defaults to "custom" for backward compatibility.
         """
         self.username = username
         self.url = url
-        self.user_login_pass = os.environ.get("USER_LOGIN_PASS")
-        if not self.user_login_pass:
-            raise ValueError("USER_LOGIN_PASS environment variables must be set.")
-        self.client = Client(PDS_ENDPOINT)
-        self.client.login(
-            self.username + PDS_USERNAME_EXTENSION,
-            self.username + self.user_login_pass
-        )
+        self.pds_type = pds_type
+        
+        # Determine password
+        if password is None:
+            self.user_login_pass = os.environ.get("USER_LOGIN_PASS")
+            if not self.user_login_pass:
+                raise ValueError("USER_LOGIN_PASS environment variable must be set when password is not provided.")
+        else:
+            self.user_login_pass = password
+        
+        # Initialize client based on PDS type
+        if pds_type == "bsky":
+            # For Bluesky, don't pass PDS_ENDPOINT
+            self.client = Client()
+            # Login with username as-is and password as-is
+            login_username = username
+            login_password = self.user_login_pass
+        else:
+            # For custom PDS, use PDS_ENDPOINT
+            self.client = Client(PDS_ENDPOINT)
+            # Login with username + extension and username + password
+            login_username = self.username + PDS_USERNAME_EXTENSION
+            login_password = self.username + self.user_login_pass
+        
+        self.client.login(login_username, login_password)
 
     def updateProfileDetails(self, display_name, description, profile_pic_url):
         """

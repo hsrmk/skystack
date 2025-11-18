@@ -304,7 +304,8 @@ class FirebaseClient:
             "/addOlderPosts": 7,
             "/updateList": 8,
             "/updateAllLists": 9,
-            "/activateDormantNewsletter": 10
+            "/activateDormantNewsletter": 10,
+            "/announceNewsletter": 11
         }
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         priority = endpoint_priority_map.get(endpoint, 5)

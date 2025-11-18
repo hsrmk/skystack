@@ -10,9 +10,12 @@ from utils.endpoints import SUBSTACK_BESTSELLERS_ENDPOINT, PDS_USERNAME_EXTENSIO
 class Categories:
     """Utility methods for working with Substack categories."""
 
-    def __init__(self) -> None:
-        handle = os.environ.get("ADMIN_BSKY_USERNAME")
-        app_password = os.environ.get("ADMIN_BSKY_APP_PASSWORD")
+    def __init__(self, handle: str | None = None, app_password: str | None = None) -> None:
+        # Allow overriding the default admin credentials; fall back to env vars if not provided.
+        if handle is None:
+            handle = os.environ.get("ADMIN_BSKY_USERNAME")
+        if app_password is None:
+            app_password = os.environ.get("ADMIN_BSKY_APP_PASSWORD")
 
         if not handle or not app_password:
             raise ValueError("Both handle and app password are required to authenticate the Bluesky client.")
