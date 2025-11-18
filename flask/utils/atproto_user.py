@@ -134,9 +134,10 @@ class AtprotoUser:
         title_handle_match = re.search(rf'@([A-Za-z0-9.-]+){re.escape(PDS_USERNAME_EXTENSION)}', title)
 
         if title_handle_match:
-            mention_handle = f"@{title_handle_match.group(1)}{PDS_USERNAME_EXTENSION}"
+            resolved_handle = f"{title_handle_match.group(1)}{PDS_USERNAME_EXTENSION}"
+            mention_handle = f"@{resolved_handle}"
             try:
-                mention_did = self.client.resolve_handle(mention_handle).did
+                mention_did = self.client.resolve_handle(resolved_handle).did
             except Exception:
                 mention_did = None
 
