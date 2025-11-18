@@ -1,7 +1,6 @@
 import re
 
-from atproto import Client, models, TextBuilder
-from atproto_client.models.utils import get_response_model
+from atproto import Client, client_utils, models
 
 import os
 import requests
@@ -142,9 +141,9 @@ class AtprotoUser:
                 mention_did = None
 
             if mention_did:
-                text_builder = TextBuilder()
+                text_builder = client_utils.TextBuilder()
                 text_builder.text(title[:title_handle_match.start()])
-                text_builder.mention(did=mention_did, handle=mention_handle)
+                text_builder.mention(handle=mention_handle, did=mention_did)
                 text_builder.text(title[title_handle_match.end():])
 
         # Append subtitle text while keeping facets aligned when using TextBuilder
@@ -155,8 +154,8 @@ class AtprotoUser:
             else:
                 title = title + ' • ' + subtitle
 
-        record_text = text_builder.text if text_builder else title
-        record_facets = text_builder.facets if text_builder else None
+        record_text = text_builder.build_text() if text_builder else title
+        record_facets = text_builder.build_facets() if text_builder else None
 
         # Create post record with custom date  
         post_record = models.AppBskyFeedPost.Record(  
