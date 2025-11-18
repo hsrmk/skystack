@@ -8,9 +8,8 @@ const db = admin.firestore();
 const storage = new Storage();
 
 // Define secrets
-const STATUS_BSKY_USERNAME = defineSecret("STATUS_BSKY_USERNAME");
-const STATUS_BSKY_APP_PASSWORD = defineSecret("STATUS_BSKY_APP_PASSWORD");
 const ANNOUNCEMENT_ENDPOINT_TOKEN = defineSecret("ANNOUNCEMENT_ENDPOINT_TOKEN");
+const CLOUD_RUN_ENDPOINT = defineSecret("CLOUD_RUN_ENDPOINT");
 
 /**
  * Cloud Function: Generate newsletters.json when newsletters are added or removed
@@ -62,7 +61,7 @@ const generateNewslettersJson = async () => {
  * Calls Flask endpoint to create announcement post on Bluesky
  */
 const createAnnouncementPost = async (newsletterId: string, eventData: any) => {
-  const cloudRunEndpoint = process.env.CLOUD_RUN_ENDPOINT;
+  const cloudRunEndpoint = CLOUD_RUN_ENDPOINT.value();
   if (!cloudRunEndpoint) {
     console.error("CLOUD_RUN_ENDPOINT environment variable not set");
     return;
@@ -97,7 +96,7 @@ const createAnnouncementPost = async (newsletterId: string, eventData: any) => {
 export const onNewsletterAdded = onDocumentCreated(
   {
     document: "newsletters/{newsletterId}",
-    secrets: [STATUS_BSKY_USERNAME, STATUS_BSKY_APP_PASSWORD, ANNOUNCEMENT_ENDPOINT_TOKEN],
+    secrets: [CLOUD_RUN_ENDPOINT, ANNOUNCEMENT_ENDPOINT_TOKEN],
   },
   async (event) => {
     console.log("Newsletter added, regenerating newsletters.json");
