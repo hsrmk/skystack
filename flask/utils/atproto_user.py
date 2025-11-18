@@ -144,7 +144,7 @@ class AtprotoUser:
             if mention_did:
                 text_builder = client_utils.TextBuilder()
                 text_builder.text(title[:title_handle_match.start()])
-                text_builder.mention(handle=mention_handle, did=mention_did)
+                text_builder.mention(text=mention_handle, did=mention_did)
                 text_builder.text(title[title_handle_match.end():])
 
         # Append subtitle text while keeping facets aligned when using TextBuilder
