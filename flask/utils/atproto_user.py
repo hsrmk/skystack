@@ -1,4 +1,6 @@
-from atproto import Client, models
+import re
+
+from atproto import Client, models, TextBuilder
 from atproto_client.models.utils import get_response_model
 
 import os
@@ -129,9 +131,37 @@ class AtprotoUser:
             label_values = [models.ComAtprotoLabelDefs.SelfLabel(val=label) for label in labels]  
             self_labels = models.ComAtprotoLabelDefs.SelfLabels(values=label_values)
 
+        text_builder = None
+        title_handle_match = re.search(rf'@([A-Za-z0-9.-]+){re.escape(PDS_USERNAME_EXTENSION)}', title)
+
+        if title_handle_match:
+            mention_handle = f"@{title_handle_match.group(1)}{PDS_USERNAME_EXTENSION}"
+            try:
+                mention_did = self.client.resolve_handle(mention_handle).did
+            except Exception:
+                mention_did = None
+
+            if mention_did:
+                text_builder = TextBuilder()
+                text_builder.text(title[:title_handle_match.start()])
+                text_builder.mention(did=mention_did, handle=mention_handle)
+                text_builder.text(title[title_handle_match.end():])
+
+        # Append subtitle text while keeping facets aligned when using TextBuilder
+        if subtitle:
+            if text_builder:
+                text_builder.text(' • ')
+                text_builder.text(subtitle)
+            else:
+                title = title + ' • ' + subtitle
+
+        record_text = text_builder.text if text_builder else title
+        record_facets = text_builder.facets if text_builder else None
+
         # Create post record with custom date  
         post_record = models.AppBskyFeedPost.Record(  
-            text=title if not subtitle else title + ' • ' + subtitle,
+            text=record_text,
+            facets=record_facets,
             created_at=post_date,  # ISO format with Z suffix  
             embed=external_embed,
             labels=self_labels
