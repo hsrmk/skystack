@@ -1,15 +1,10 @@
 import { onDocumentCreated, onDocumentDeleted } from "firebase-functions/v2/firestore";
-import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { Storage } from "@google-cloud/storage";
 
 admin.initializeApp();
 const db = admin.firestore();
 const storage = new Storage();
-
-// Define secrets
-const ANNOUNCEMENT_ENDPOINT_TOKEN = defineSecret("ANNOUNCEMENT_ENDPOINT_TOKEN");
-const CLOUD_RUN_ENDPOINT = defineSecret("CLOUD_RUN_ENDPOINT");
 
 /**
  * Cloud Function: Generate newsletters.json when newsletters are added or removed
@@ -57,57 +52,12 @@ const generateNewslettersJson = async () => {
   }
 };
 
-/**
- * Calls Flask endpoint to create announcement post on Bluesky
- */
-const createAnnouncementPost = async (newsletterId: string, eventData: any) => {
-  const cloudRunEndpoint = CLOUD_RUN_ENDPOINT.value();
-  if (!cloudRunEndpoint) {
-    console.error("CLOUD_RUN_ENDPOINT environment variable not set");
-    return;
-  }
-
-  try {
-    const endpoint = `${cloudRunEndpoint.replace(/\/$/, "")}/announceNewsletter`;
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${ANNOUNCEMENT_ENDPOINT_TOKEN.value()}`,
-      },
-      body: JSON.stringify({
-        newsletterId,
-        custom_domain: eventData.custom_domain || null,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to create announcement post: ${response.status} - ${errorText}`);
-    } else {
-      console.log("✅ Announcement post created successfully");
-    }
-  } catch (error) {
-    console.error("❌ Error creating announcement post:", error);
-  }
-};
-
 // Trigger when a newsletter is added
 export const onNewsletterAdded = onDocumentCreated(
-  {
-    document: "newsletters/{newsletterId}",
-    secrets: [CLOUD_RUN_ENDPOINT, ANNOUNCEMENT_ENDPOINT_TOKEN],
-  },
+  "newsletters/{newsletterId}",
   async (event) => {
     console.log("Newsletter added, regenerating newsletters.json");
     await generateNewslettersJson();
-    
-    // Create announcement post
-    const newsletterId = event.params.newsletterId;
-    const eventData = event.data?.data();
-    if (eventData) {
-      await createAnnouncementPost(newsletterId, eventData);
-    }
   }
 );
 

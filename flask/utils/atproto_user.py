@@ -101,7 +101,7 @@ class AtprotoUser:
 
     def createEmbededLinkPost(self, title, subtitle, link, thumbnail_url, post_date, labels):
         """
-        Creates a new post with a link card embed.
+        Creates a new post with a link card embed (simple version with plain text).
 
         Args:
             title (str): The title of the link card.
@@ -112,26 +112,34 @@ class AtprotoUser:
         Returns:
             The response from the server after creating the post.
         """
-        # Create external embed for link preview
-        blob_response = self.uploadBlob(thumbnail_url)
-        external_embed = models.AppBskyEmbedExternal.Main(
-            external=models.AppBskyEmbedExternal.External(
-                uri=link,
-                title=title,
-                description=subtitle,
-                thumb=blob_response.blob
-            )
-        )
+        external_embed = self._createExternalEmbed(title, subtitle, link, thumbnail_url)
+        self_labels = self._createSelfLabels(labels)
+        post_text = self._buildPostText(title, subtitle)
+        post_record = self._createPostRecord(post_text, None, post_date, external_embed, self_labels)
+        return self._publishPost(post_record)
 
-        # 'labels': ['reaction_count:149', 'comment_count:109', 'child_comment_count:33']
-        # https://deepwiki.com/search/i-am-creating-a-embed-post-lik_58bdf979-e9bd-4898-bb81-a3c788c42510
-        self_labels = None  
-        if labels:  
-            label_values = [models.ComAtprotoLabelDefs.SelfLabel(val=label) for label in labels]  
-            self_labels = models.ComAtprotoLabelDefs.SelfLabels(values=label_values)
+    def createEmbededLinkPostWithMentions(self, post_text, link, thumbnail_url, post_date, labels, embedTitle, embedSubtitle):
+        """
+        Creates a new post with a link card embed, with support for mentions in the title.
 
+        Args:
+            post_text (str): The text of the post. May contain @handle mentions.
+            link (str): The URL the link card should point to.
+            thumbnail_url (str): The URL of the image for the link card's thumbnail.
+            post_date (str): ISO format date string with Z suffix.
+            labels (Optional[list[str]]): A list of string labels to be applied to the post for self-moderation, content warnings, or category grouping.
+            embedTitle (str): The title to use within the embedded link card itself, separate from the main post title for cases where the post's title contains a mention but the embed's title needs to differ.
+            embedSubtitle (str): The subtitle/description to use within the embedded link card itself, separate from the main post subtitle.
+
+        Returns:
+            The response from the server after creating the post.
+        """
+        external_embed = self._createExternalEmbed(embedTitle, embedSubtitle, link, thumbnail_url)
+        self_labels = self._createSelfLabels(labels)
+
+        # Check for handle mentions in title
         text_builder = None
-        title_handle_match = re.search(rf'@([A-Za-z0-9.-]+){re.escape(PDS_USERNAME_EXTENSION)}', title)
+        title_handle_match = re.search(rf'@([A-Za-z0-9.-]+){re.escape(PDS_USERNAME_EXTENSION)}', post_text)
 
         if title_handle_match:
             resolved_handle = f"{title_handle_match.group(1)}{PDS_USERNAME_EXTENSION}"
@@ -143,36 +151,15 @@ class AtprotoUser:
 
             if mention_did:
                 text_builder = client_utils.TextBuilder()
-                text_builder.text(title[:title_handle_match.start()])
+                text_builder.text(post_text[:title_handle_match.start()])
                 text_builder.mention(text=mention_handle, did=mention_did)
-                text_builder.text(title[title_handle_match.end():])
+                text_builder.text(post_text[title_handle_match.end():])
 
-        # Append subtitle text while keeping facets aligned when using TextBuilder
-        if subtitle:
-            if text_builder:
-                text_builder.text(' • ')
-                text_builder.text(subtitle)
-            else:
-                title = title + ' • ' + subtitle
-
-        record_text = text_builder.build_text() if text_builder else title
+        record_text = text_builder.build_text() if text_builder else post_text
         record_facets = text_builder.build_facets() if text_builder else None
 
-        # Create post record with custom date  
-        post_record = models.AppBskyFeedPost.Record(  
-            text=record_text,
-            facets=record_facets,
-            created_at=post_date,  # ISO format with Z suffix  
-            embed=external_embed,
-            labels=self_labels
-        )
-        
-        # Create the post using the record namespace 
-        post_response = self.client.app.bsky.feed.post.create(  
-            repo=self.client.me.did,
-            record=post_record  
-        )
-        return post_response
+        post_record = self._createPostRecord(record_text, record_facets, post_date, external_embed, self_labels)
+        return self._publishPost(post_record)
 
     def followUser(self, follow_user):
         """
@@ -216,3 +203,93 @@ class AtprotoUser:
 
         blob_response = self.client.com.atproto.repo.upload_blob(image_data, headers={"Content-Type": "url/" + image_url})
         return blob_response
+
+    def _createExternalEmbed(self, title, subtitle, link, thumbnail_url):
+        """
+        Creates an external embed for a link card.
+
+        Args:
+            title (str): The title of the link card.
+            subtitle (str): The description/subtitle of the link card.
+            link (str): The URL the link card should point to.
+            thumbnail_url (str): The URL of the image for the link card's thumbnail.
+
+        Returns:
+            The external embed object.
+        """
+        blob_response = self.uploadBlob(thumbnail_url)
+        return models.AppBskyEmbedExternal.Main(
+            external=models.AppBskyEmbedExternal.External(
+                uri=link,
+                title=title,
+                description=subtitle,
+                thumb=blob_response.blob
+            )
+        )
+
+    def _createSelfLabels(self, labels):
+        """
+        Creates self labels from a list of label strings.
+
+        Args:
+            labels (list): List of label strings.
+
+        Returns:
+            SelfLabels object or None if labels is empty/None.
+        """
+        if not labels:
+            return None
+        label_values = [models.ComAtprotoLabelDefs.SelfLabel(val=label) for label in labels]
+        return models.ComAtprotoLabelDefs.SelfLabels(values=label_values)
+
+    def _buildPostText(self, title, subtitle):
+        """
+        Builds plain text for a post, combining title and subtitle.
+
+        Args:
+            title (str): The title text.
+            subtitle (str): Optional subtitle text.
+
+        Returns:
+            Combined text string.
+        """
+        if subtitle:
+            return title + ' • ' + subtitle
+        return title
+
+    def _createPostRecord(self, text, facets, post_date, embed, labels):
+        """
+        Creates a post record with the given parameters.
+
+        Args:
+            text (str): The post text.
+            facets: Optional facets for rich text.
+            post_date (str): ISO format date string with Z suffix.
+            embed: The embed object (external link card).
+            labels: Optional self labels.
+
+        Returns:
+            The post record object.
+        """
+        return models.AppBskyFeedPost.Record(
+            text=text,
+            facets=facets,
+            created_at=post_date,
+            embed=embed,
+            labels=labels
+        )
+
+    def _publishPost(self, post_record):
+        """
+        Publishes a post record to the PDS.
+
+        Args:
+            post_record: The post record to publish.
+
+        Returns:
+            The response from the server after creating the post.
+        """
+        return self.client.app.bsky.feed.post.create(
+            repo=self.client.me.did,
+            record=post_record
+        )

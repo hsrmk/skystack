@@ -247,7 +247,35 @@ class FirebaseClient:
             if isinstance(newsletters, list):
                 return [item.get("username") for item in newsletters if item.get("username")]
             return []
-        except Exception as e:
+        except Exception:
+            return []
+
+    def getAllNewsletterDetails(self):
+        """
+        Fetches newsletter data from a static JSON URL and returns a list of dicts,
+        each containing: username, name, substackUrl, description.
+        :return: list of dict
+        """
+        url = ALL_NEWSLETTERS_STATIC_JSON
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            newsletters = response.json()
+            details = []
+            if isinstance(newsletters, list):
+                for item in newsletters:
+                    username = item.get("username")
+                    name = item.get("name")
+                    description = item.get("description")
+                    substack_url = item.get("substackUrl")
+                    details.append({
+                        "username": username,
+                        "name": name,
+                        "substackUrl": substack_url,
+                        "description": description
+                    })
+            return details
+        except Exception:
             return []
 
     def getCategories(self):
