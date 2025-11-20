@@ -10,7 +10,8 @@ def create_cloud_task(
         payload: dict, 
         queue_name: str = os.environ.get('CLOUD_TASKS_CREATE_AND_BUILD_QUEUE', 'default'), 
         task_name: str = None,
-        delay_seconds: int = None
+        delay_seconds: int = None,
+        headers: dict = None
     ):
     """
     Creates a Google Cloud Task with the specified endpoint and payload.
@@ -41,13 +42,17 @@ def create_cloud_task(
             client = tasks_v2.CloudTasksClient()
             parent = client.queue_path(project_id, location, queue_name)
 
+            request_headers = {
+                'Content-Type': 'application/json',
+            }
+            if headers:
+                request_headers.update(headers)
+
             task = {
                 'http_request': {
                     'http_method': tasks_v2.HttpMethod.POST,
                     'url': endpoint,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                    },
+                    'headers': request_headers,
                     'body': json.dumps(payload).encode()
                 }
             }

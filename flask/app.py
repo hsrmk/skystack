@@ -13,6 +13,7 @@ from endpoints.activate_dormant_newsletter import activate_dormant_newsletter_ro
 from endpoints.update_list import update_list_route
 from endpoints.update_all_lists import update_all_lists_route
 from endpoints.announce_newsletter import announce_newsletter_route
+from endpoints.check_new_newsletters import check_new_newsletters_route
 
 app = Flask(__name__)
 CORS(app)
@@ -64,6 +65,10 @@ def update_all_lists_route_wrapper():
 @app.route('/announceNewsletter', methods=['POST'])
 def announce_newsletter_route_wrapper():
     return announce_newsletter_route()
+
+@app.route('/checkNewNewsletters', methods=['POST'])
+def check_new_newsletters_route_wrapper():
+    return check_new_newsletters_route()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
