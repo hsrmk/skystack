@@ -39,10 +39,10 @@ def update_list_route():
         all_newsletters = firebase.getAllNewsletterUsernames()
         
         # Step 2: Get bestsellers for the category
-        bestsellers = categories.getBestsellers(id, count=100)
+        bestsellers = categories.getBestsellers(id)
         
         # Step 3: Get already present usernames in the list
-        existing_members = categories.getListMembers(list_url, page_limit=100)
+        existing_members = categories.getListMembers(list_url)
         
         # Step 4: Remove already present usernames from all newsletters
         existing_members_set = set(existing_members)

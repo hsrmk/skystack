@@ -39,7 +39,7 @@ def announce_newsletter_route():
         at_user = AtprotoUser(username, "", password=password, pds_type="bsky")
 
         # Step 1: Get existing members from the Bluesky list
-        existing_members = categories.getListMembers(all_newsletters_list, page_limit=1000)
+        existing_members = categories.getListMembers(all_newsletters_list)
         existing_members_set = set(existing_members)
 
         # Step 2: Get all newsletter details from Firebase-backed static JSON
