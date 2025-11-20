@@ -141,7 +141,7 @@ def announce_newsletter_route():
         return response, 200
         
     except Exception as e:
-        payload = json.dumps(request.get_json()) if request.get_json() else "{}"
+        payload = {}
         firebase.log_failed_task(payload, "/announceNewsletter", str(e))
         return {"error": f"Internal server error: {str(e)}"}, 500
 
