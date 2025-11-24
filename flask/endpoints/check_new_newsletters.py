@@ -78,7 +78,7 @@ def check_new_newsletters_route():
             }, 200
 
         # Prepare scheduling parameters
-        total_window_seconds = 12 * 3600  # 12 hours
+        total_window_seconds = 48 * 3600  # 48 hours
         interval_seconds = total_window_seconds / (total_new - 1) if total_new > 1 else 0
 
         announce_endpoint = cloud_run_endpoint.rstrip('/') + '/announceNewsletter'
