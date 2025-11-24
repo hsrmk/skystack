@@ -95,11 +95,15 @@ def check_new_newsletters_route():
                 "substackUrl": newsletter.get("substackUrl")
             }
 
+            task_username = newsletter.get('username', 'unknown')
+            if isinstance(task_username, str) and task_username.endswith('.skystack.xyz'):
+                task_username = task_username[:-len('.skystack.xyz')]
+
             task_response = create_cloud_task(
                 announce_endpoint,
                 payload,
                 queue_name,
-                task_name=f"announce_{newsletter.get('username', 'unknown')}_{int(time.time())}",
+                task_name=f"announce_{task_username}_{int(time.time())}",
                 delay_seconds=delay_seconds,
                 headers={
                     "Authorization": f"Bearer {cloud_function_token}"
