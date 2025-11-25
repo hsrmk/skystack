@@ -82,7 +82,7 @@ def check_new_newsletters_route():
         interval_seconds = total_window_seconds / (total_new - 1) if total_new > 1 else 0
 
         announce_endpoint = cloud_run_endpoint.rstrip('/') + '/announceNewsletter'
-        queue_name = os.environ.get('CLOUD_TASKS_CREATE_AND_BUILD_QUEUE', 'default')
+        queue_name = os.environ.get('CLOUD_TASKS_ANNOUNCEMENT_QUEUE', 'default')
 
         tasks_scheduled = []
 
