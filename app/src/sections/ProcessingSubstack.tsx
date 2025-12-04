@@ -39,6 +39,12 @@ export default function ProcessingSubstack({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const finishedCalledRef = useRef(false);
 
+	const onFinishRef = useRef(onFinish);
+
+	useEffect(() => {
+		onFinishRef.current = onFinish;
+	}, [onFinish]);
+
 	useEffect(() => {
 		// Constants
 		const API_ENDPOINT =
@@ -131,7 +137,7 @@ export default function ProcessingSubstack({
 			if (event.state === "finished" && !finishedCalledRef.current) {
 				finishedCalledRef.current = true;
 				const finishedData = extractFinishedData(event);
-				onFinish?.(finishedData);
+				onFinishRef.current?.(finishedData);
 				return "finished"; // Signal success - stop reading
 			}
 
@@ -265,7 +271,7 @@ export default function ProcessingSubstack({
 			cancelled = true;
 			abortControllerRef.current?.abort();
 		};
-	}, [url, onFinish]);
+	}, [url]);
 
 	// Scroll to bottom on new event
 	useEffect(() => {

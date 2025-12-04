@@ -51,11 +51,12 @@ export default function SearchCommand({
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [isSearching, setIsSearching] = useState(false);
 	const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+	const [mirrorDialogOpen, setMirrorDialogOpen] = useState(false);
 	const listRef = React.useRef<HTMLDivElement>(null);
 
 	// Reset state when dialog closes
 	React.useEffect(() => {
-		if (!open) {
+		if (!open && !mirrorDialogOpen) {
 			const timer = setTimeout(() => {
 				setSearch("");
 				setDebouncedSearch("");
@@ -64,7 +65,7 @@ export default function SearchCommand({
 			}, 300); // Wait for close animation
 			return () => clearTimeout(timer);
 		}
-	}, [open]);
+	}, [open, mirrorDialogOpen]);
 
 	// Debounce search input
 	React.useEffect(() => {
@@ -116,7 +117,7 @@ export default function SearchCommand({
 		}
 	};
 
-	const [mirrorDialogOpen, setMirrorDialogOpen] = useState(false);
+
 
 	// Helper function for handling account selection
 	const handleAccountSelect = (skystackUrl: string) => {
