@@ -23,10 +23,10 @@ def update_all_lists_route():
                 "tasks_scheduled": 0
             }, 200
         
-        # Calculate spacing: spread over 6 days (518400 seconds)
+        # Calculate spacing: spread over total_days days
         total_categories = len(categories)
-        total_days = 6
-        total_seconds = total_days * 24 * 3600  # 6 days in seconds
+        total_days = 1
+        total_seconds = total_days * 24 * 3600  # total_days days in seconds
         
         # Calculate delay interval between tasks
         if total_categories > 1:
