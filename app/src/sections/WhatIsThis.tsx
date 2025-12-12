@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Roboto_Mono } from "next/font/google";
 
 const robotoMono = Roboto_Mono({ subsets: ["latin"], weight: ["400"] });
@@ -42,6 +42,47 @@ export default function WhatIsThis() {
 						limited to algorithm-driven feeds. Skystack helps you
 						follow Substack Newsletters on Bluesky!
 					</p>
+					<div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center gap-3 pt-2">
+						<div className="flex items-start justify-center gap-6 md:gap-10">
+							<div className="flex flex-col items-center">
+								<Image
+									src="/lists.png"
+									alt="Substack follow"
+									width={192}
+									height={128}
+									className="h-auto w-40 md:w-60"
+									sizes="(min-width: 768px) 12rem, 8rem"
+								/>
+								<p className="mt-2 w-40 text-left text-sm text-font-secondary md:w-60">
+									Lists of Substack Bestsellers is already
+									available to follow on Bluesky{" "}
+									<a
+										href="https://bsky.app/profile/skystack.xyz"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="inline-flex items-center text-white underline"
+									>
+										here.
+										<ArrowUpRight className="h-4 w-4" />
+									</a>
+								</p>
+							</div>
+							<div className="flex flex-col items-center">
+								<Image
+									src="/subs-feed.png"
+									alt="Bluesky follow"
+									width={192}
+									height={128}
+									className="h-auto w-40 md:w-60"
+									sizes="(min-width: 768px) 12rem, 8rem"
+								/>
+								<p className="mt-2 w-40 text-left text-sm text-font-secondary md:w-60">
+									A custom feed of your subscriptions, shaped
+									by the algorithms you prefer.
+								</p>
+							</div>
+						</div>
+					</div>
 
 					<p
 						className={`${robotoMono.className} md:max-w-lg text-md text-font-secondary no-underline`}
