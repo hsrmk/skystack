@@ -12,6 +12,25 @@ const inter = Inter({
 export const metadata: Metadata = {
 	title: "Skystack",
 	description: "Follow Substack Newsletters on Bluesky",
+	openGraph: {
+		title: "Skystack",
+		description: "Follow Substack Newsletters on Bluesky",
+		images: [
+			{
+				url: "/skystack-og.png",
+				width: 1200,
+				height: 630,
+				alt: "Skystack Logo",
+			},
+		],
+		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Skystack",
+		description: "Follow Substack Newsletters on Bluesky",
+		images: ["/skystack-og.png"],
+	},
 };
 
 export default function RootLayout({
