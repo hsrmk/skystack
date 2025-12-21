@@ -91,12 +91,14 @@ class AtprotoUser:
             description=description_str,
             avatar=avatar_blob,
         )
-        # Update the profile using the profile record namespace
-        profile_response = self.client.app.bsky.actor.profile.create(
+        # Update the profile using put_record since the profile record already exists
+        data = models.ComAtprotoRepoPutRecord.Data(
             repo=self.client.me.did,
+            collection=models.ids.AppBskyActorProfile,
+            rkey='self',
             record=profile_record,
-            rkey='self'
         )
+        profile_response = self.client.com.atproto.repo.put_record(data)
         return profile_response
 
     def createEmbededLinkPost(self, title, subtitle, link, thumbnail_url, post_date, labels):
